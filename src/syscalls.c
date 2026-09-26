@@ -52,6 +52,21 @@ int _open(const char *name, int flags, int mode)
     return -1;
 }
 
+int _link(const char *old_name, const char *new_name)
+{
+    (void)old_name;
+    (void)new_name;
+    errno = ENOSYS;
+    return -1;
+}
+
+int _unlink(const char *name)
+{
+    (void)name;
+    errno = ENOSYS;
+    return -1;
+}
+
 int _read(int file, char *ptr, int len)
 {
     (void)file;

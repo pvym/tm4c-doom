@@ -3,8 +3,8 @@ ENTRY(ResetISR)
 MEMORY
 {
     FLASH      (rx)  : ORIGIN = 0x00000000, LENGTH = 1024K
-    SRAM       (rwx) : ORIGIN = 0x20000000, LENGTH = 256K
-    SDRAM_ZONE (rwx) : ORIGIN = 0x60000000, LENGTH = 16M
+    SRAM       (rwx) : ORIGIN = 0x20000000, LENGTH = 8M
+    SDRAM_ZONE (rwx) : ORIGIN = 0x60000000, LENGTH = 8M
     SDRAM_WAD  (rwx) : ORIGIN = 0x61000000, LENGTH = 8M
     LCD_FB     (rwx) : ORIGIN = 0x10000000, LENGTH = 320K
 }
@@ -33,6 +33,12 @@ SECTIONS
         . = ALIGN(4);
         _etext = .;
     } > FLASH
+
+  /DISCARD/ :
+       {
+        *(.ARM.exidx*)
+        *(.gnu.linkonce.armexidx.*)
+       }
 
     .ARM.exidx :
     {

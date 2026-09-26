@@ -7,7 +7,7 @@ CC := $(CROSS_COMPILE)gcc
 OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE := $(CROSS_COMPILE)size
 
-TIVAWARE_DIR ?= /opt/ti/SW-TM4C-2.2.0.295
+TIVAWARE_DIR ?= ../../../
 STARTUP ?= src/startup_gcc.c
 LINKER_SCRIPT ?= linker/tm4c129_sdram.ld
 
@@ -27,7 +27,7 @@ DEFINES := \
 #
 #
 
-CFLAGS := -std=c99 -Os -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+CFLAGS := -Os -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
     -ffunction-sections -fdata-sections -fno-common -Wall -Wextra \
     -specs=nano.specs \
     $(INCLUDES) $(DEFINES)

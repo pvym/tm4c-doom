@@ -292,8 +292,15 @@ char *M_StrCaseStr(char *haystack, char *needle)
 char *M_StringDuplicate(const char *orig)
 {
     char *result;
+    size_t len;
 
-    result = strdup(orig);
+    len = strlen(orig) + 1;
+    result = malloc(len);
+
+    if (result != NULL)
+    {
+        memcpy(result, orig, len);
+    }
 
     if (result == NULL)
     {
@@ -533,4 +540,3 @@ char *M_OEMToUTF8(const char *oem)
 }
 
 #endif
-

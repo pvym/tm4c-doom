@@ -1128,7 +1128,7 @@ static void LoadIwadDeh(void)
         }
         else
         {
-            chex_deh = strdup("chex.deh");
+            chex_deh = M_StringDuplicate("chex.deh");
         }
 
         // If the dehacked patch isn't found, try searching the WAD
@@ -1842,4 +1842,3 @@ void D_DoomMain (void)
 
     D_DoomLoop ();
 }
-

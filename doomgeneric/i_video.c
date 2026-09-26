@@ -428,20 +428,15 @@ int I_GetPaletteIndex (int r, int g, int b)
 {
     int best, best_diff, diff;
     int i;
-    col_t color;
 
     best = 0;
     best_diff = INT_MAX;
 
     for (i = 0; i < 256; ++i)
     {
-    	color.r = GFX_RGB565_R(rgb565_palette[i]);
-    	color.g = GFX_RGB565_G(rgb565_palette[i]);
-    	color.b = GFX_RGB565_B(rgb565_palette[i]);
-
-        diff = (r - color.r) * (r - color.r)
-             + (g - color.g) * (g - color.g)
-             + (b - color.b) * (b - color.b);
+        diff = (r - colors[i].r) * (r - colors[i].r)
+             + (g - colors[i].g) * (g - colors[i].g)
+             + (b - colors[i].b) * (b - colors[i].b);
 
         if (diff < best_diff)
         {

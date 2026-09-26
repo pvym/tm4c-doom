@@ -1,5 +1,8 @@
+#include <stdbool.h>
+
 #include "config.h"
 #include "lcd_init.h"
+#include "st7796s_commands.h"
 
 #include "inc/hw_gpio.h"
 #include "inc/hw_memmap.h"
@@ -8,7 +11,9 @@
 #include "driverlib/gpio.h"
 #include "driverlib/interrupt.h"
 #include "driverlib/lcd.h"
+#include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/ssi.h"
 
 static const tLCDRasterTiming g_tm4cRasterTiming =
 {
@@ -23,6 +28,153 @@ static const tLCDRasterTiming g_tm4cRasterTiming =
     TM4C_LCD_V_PULSE_WIDTH,
     TM4C_LCD_AC_BIAS
 };
+
+static void PanelBacklightSet(bool enabled)
+{
+    GPIOPinWrite(TM4C_PANEL_BACKLIGHT_PORT,
+                 TM4C_PANEL_BACKLIGHT_PIN,
+                 enabled ? TM4C_PANEL_BACKLIGHT_PIN : 0U);
+}
+
+static void PanelSPIWrite(uint16_t value)
+{
+    uint32_t dummy;
+
+    SSIDataPut(TM4C_PANEL_SPI_BASE, value);
+    while (SSIBusy(TM4C_PANEL_SPI_BASE))
+    {
+    }
+    SSIDataGet(TM4C_PANEL_SPI_BASE, &dummy);
+}
+
+static void PanelWriteCommand(uint8_t command)
+{
+    PanelSPIWrite(command);
+}
+
+static void PanelWriteData(uint8_t data)
+{
+    PanelSPIWrite(0x100U | data);
+}
+
+static void PanelDelayMs(uint32_t system_clock_hz, uint32_t ms)
+{
+    SysCtlDelay((system_clock_hz / 3000U) * ms);
+}
+
+static void PanelSPIInit(uint32_t system_clock_hz)
+{
+    uint32_t discard;
+
+    SysCtlPeripheralEnable(TM4C_PANEL_SPI_GPIO_PERIPH);
+    SysCtlPeripheralEnable(TM4C_PANEL_SPI_PERIPH);
+    while (!SysCtlPeripheralReady(TM4C_PANEL_SPI_GPIO_PERIPH) ||
+           !SysCtlPeripheralReady(TM4C_PANEL_SPI_PERIPH))
+    {
+    }
+
+    GPIOPinConfigure(TM4C_PANEL_SPI_CLK_CFG);
+    GPIOPinConfigure(TM4C_PANEL_SPI_TX_CFG);
+    GPIOPinConfigure(TM4C_PANEL_SPI_RX_CFG);
+    GPIOPinConfigure(TM4C_PANEL_SPI_FSS_CFG);
+    GPIOPinTypeSSI(TM4C_PANEL_SPI_GPIO_BASE,
+                   TM4C_PANEL_SPI_CLK_PIN |
+                   TM4C_PANEL_SPI_TX_PIN |
+                   TM4C_PANEL_SPI_RX_PIN |
+                   TM4C_PANEL_SPI_FSS_PIN);
+
+    SSIDisable(TM4C_PANEL_SPI_BASE);
+    SSIConfigSetExpClk(TM4C_PANEL_SPI_BASE,
+                       system_clock_hz,
+                       SSI_FRF_MOTO_MODE_0,
+                       SSI_MODE_MASTER,
+                       TM4C_PANEL_SPI_HZ,
+                       9U);
+    SSIEnable(TM4C_PANEL_SPI_BASE);
+
+    while (SSIDataGetNonBlocking(TM4C_PANEL_SPI_BASE, &discard))
+    {
+    }
+}
+
+static void PanelGPIOInit(void)
+{
+    SysCtlPeripheralEnable(TM4C_PANEL_RESET_PERIPH);
+    SysCtlPeripheralEnable(TM4C_PANEL_DRDX_PERIPH);
+    SysCtlPeripheralEnable(TM4C_PANEL_BACKLIGHT_PERIPH);
+    while (!SysCtlPeripheralReady(TM4C_PANEL_RESET_PERIPH) ||
+           !SysCtlPeripheralReady(TM4C_PANEL_DRDX_PERIPH) ||
+           !SysCtlPeripheralReady(TM4C_PANEL_BACKLIGHT_PERIPH))
+    {
+    }
+
+    GPIOPinTypeGPIOOutput(TM4C_PANEL_RESET_PORT, TM4C_PANEL_RESET_PIN);
+    GPIOPinTypeGPIOOutput(TM4C_PANEL_DRDX_PORT, TM4C_PANEL_DRDX_PIN);
+    GPIOPinTypeGPIOOutput(TM4C_PANEL_BACKLIGHT_PORT, TM4C_PANEL_BACKLIGHT_PIN);
+
+    GPIOPinWrite(TM4C_PANEL_DRDX_PORT, TM4C_PANEL_DRDX_PIN, TM4C_PANEL_DRDX_PIN);
+    GPIOPinWrite(TM4C_PANEL_RESET_PORT, TM4C_PANEL_RESET_PIN, TM4C_PANEL_RESET_PIN);
+    PanelBacklightSet(false);
+}
+
+static void PanelInitST7796SRGB(uint32_t system_clock_hz)
+{
+    PanelGPIOInit();
+    PanelSPIInit(system_clock_hz);
+
+    PanelDelayMs(system_clock_hz, 10U);
+    GPIOPinWrite(TM4C_PANEL_RESET_PORT, TM4C_PANEL_RESET_PIN, 0U);
+    PanelDelayMs(system_clock_hz, 400U);
+    GPIOPinWrite(TM4C_PANEL_RESET_PORT,
+                 TM4C_PANEL_RESET_PIN,
+                 TM4C_PANEL_RESET_PIN);
+    PanelDelayMs(system_clock_hz, 400U);
+
+    PanelWriteCommand(ST7796S_SWRESET);
+    PanelDelayMs(system_clock_hz, 120U);
+
+    PanelWriteCommand(ST7796S_CSCON);
+    PanelWriteData(0xC3U);
+    PanelWriteCommand(ST7796S_CSCON);
+    PanelWriteData(0x96U);
+
+    PanelWriteCommand(ST7796S_SLPOUT);
+    PanelDelayMs(system_clock_hz, 120U);
+
+    PanelWriteCommand(ST7796S_IDMOFF);
+    PanelWriteCommand(ST7796S_MADCTL);
+    PanelWriteData(0x08U);
+    PanelWriteCommand(ST7796S_COLMOD);
+    PanelWriteData(0x55U);
+    PanelWriteCommand(ST7796S_DIC);
+    PanelWriteData(0x01U);
+    PanelWriteCommand(ST7796S_IFMODE);
+    PanelWriteData(0x00U);
+
+    PanelWriteCommand(ST7796S_DFC);
+    PanelWriteData(0x20U);
+    PanelWriteData(0x22U);
+    PanelWriteData(0x3BU);
+
+    PanelWriteCommand(ST7796S_BPC);
+    PanelWriteData((uint8_t)g_tm4cRasterTiming.ui8VFrontPorch);
+    PanelWriteData((uint8_t)g_tm4cRasterTiming.ui8VBackPorch);
+    PanelWriteData(0x00U);
+    PanelWriteData((uint8_t)g_tm4cRasterTiming.ui16HBackPorch);
+
+    PanelWriteCommand(ST7796S_WRCABC);
+    PanelWriteData(0x82U);
+
+    PanelWriteCommand(ST7796S_CSCON);
+    PanelWriteData(0x3CU);
+    PanelWriteCommand(ST7796S_CSCON);
+    PanelWriteData(0x69U);
+
+    PanelDelayMs(system_clock_hz, 80U);
+    PanelWriteCommand(ST7796S_DISPON);
+    PanelDelayMs(system_clock_hz, 60U);
+    PanelBacklightSet(true);
+}
 
 void LCDIntHandler(void)
 {
@@ -43,6 +195,8 @@ volatile uint16_t *LCD_GetFramebuffer(void)
 
 void __attribute__((weak)) TM4C_LCD_ControllerInit(void)
 {
+    PanelInitST7796SRGB(TM4C_SYSTEM_CLOCK_HZ);
+
     SysCtlPeripheralEnable(SYSCTL_PERIPH_LCD0);
     while (!SysCtlPeripheralReady(SYSCTL_PERIPH_LCD0))
     {

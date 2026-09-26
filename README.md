@@ -70,3 +70,5 @@ Výstupy:
 - Render zůstává bez škálování; `doomgeneric_tm4c.c` pouze centruje 320×200 obraz do 480×320 framebufferu a vyplní border černou.
 - `src/w_file_fatfs.c` při dostatečné velikosti cache načte celý WAD do rezervované SDRAM oblasti, jinak čte přímo přes FatFs.
 - Zvuk ani networking nejsou zapnuté.
+- `src/lcd_init.c` nyní obsahuje i ST7796S RGB/SPI init sekvenci odvozenou z `x-v2/Powertip320x480x16_st7796s_spi.c`.
+- Výchozí panel-control piny jsou v `inc/config.h` (`SSI0` na `PA2..PA5`, reset `PF1`, DRDX `PF0`, backlight `PH0`); pokud se vaše deska liší, upravte tyto makra.

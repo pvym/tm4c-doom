@@ -276,6 +276,8 @@ void I_InitGraphics (void)
     i = M_CheckParmWithArgs("-scaling", 1);
     if (i > 0) {
         i = atoi(myargv[i + 1]);
+        if (i < 1)
+            i = 1;
         fb_scaling = i;
         printf("I_InitGraphics: Scaling factor: %d\n", fb_scaling);
     } else {
@@ -283,6 +285,20 @@ void I_InitGraphics (void)
         if (s_Fb.yres / SCREENHEIGHT < fb_scaling)
             fb_scaling = s_Fb.yres / SCREENHEIGHT;
         printf("I_InitGraphics: Auto-scaling factor: %d\n", fb_scaling);
+    }
+
+    if (fb_scaling < 1)
+        fb_scaling = 1;
+
+    i = s_Fb.xres / SCREENWIDTH;
+    if (s_Fb.yres / SCREENHEIGHT < i)
+        i = s_Fb.yres / SCREENHEIGHT;
+    if (i < 1)
+        i = 1;
+    if (fb_scaling > i)
+    {
+        fb_scaling = i;
+        printf("I_InitGraphics: Clamped scaling factor: %d\n", fb_scaling);
     }
 
 

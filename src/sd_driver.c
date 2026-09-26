@@ -450,3 +450,10 @@ const char *SD_DriverDefaultWadPath(void)
 {
     return TM4C_WAD_PATH;
 }
+
+DWORD get_fattime(void)
+{
+    return ((DWORD)(2024U - 1980U) << 25) |
+           ((DWORD)1U << 21) |
+           ((DWORD)1U << 16);
+}

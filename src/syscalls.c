@@ -52,6 +52,13 @@ int _open(const char *name, int flags, int mode)
     return -1;
 }
 
+int mkdir(const char *path, mode_t mode)
+{
+    (void)path;
+    (void)mode;
+    return 0;
+}
+
 int _link(const char *old_name, const char *new_name)
 {
     (void)old_name;

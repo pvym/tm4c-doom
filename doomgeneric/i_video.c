@@ -253,9 +253,9 @@ void I_InitGraphics (void)
 		s_Fb.red.length = 5;
 		s_Fb.transp.length = 0;
 
-		s_Fb.blue.offset = 11;
+		s_Fb.blue.offset = 0;
 		s_Fb.green.offset = 5;
-		s_Fb.red.offset = 0;
+		s_Fb.red.offset = 11;
 		s_Fb.transp.offset = 16;
 	}
 	else
@@ -335,7 +335,7 @@ void I_FinishUpdate (void)
 
     /* DRAW SCREEN */
     line_in  = (unsigned char *) I_VideoBuffer;
-    line_out = (unsigned char *) DG_ScreenBuffer;
+    line_out = (unsigned char *) DG_ScreenBuffer + y_offset;
 
     y = SCREENHEIGHT;
 
@@ -388,20 +388,6 @@ void I_ReadScreen (byte* scr)
 void I_SetPalette (byte* palette)
 {
 	int i;
-	//col_t* c;
-
-	//for (i = 0; i < 256; i++)
-	//{
-	//	c = (col_t*)palette;
-
-	//	rgb565_palette[i] = GFX_RGB565(gammatable[usegamma][c->r],
-	//								   gammatable[usegamma][c->g],
-	//								   gammatable[usegamma][c->b]);
-
-	//	palette += 3;
-	//}
-    
-
     /* performance boost:
      * map to the right pixel format over here! */
 
@@ -410,6 +396,7 @@ void I_SetPalette (byte* palette)
         colors[i].r = gammatable[usegamma][*palette++];
         colors[i].g = gammatable[usegamma][*palette++];
         colors[i].b = gammatable[usegamma][*palette++];
+        rgb565_palette[i] = GFX_RGB565(colors[i].r, colors[i].g, colors[i].b);
     }
 
 #ifdef CMAP256

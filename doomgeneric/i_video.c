@@ -40,6 +40,8 @@ rcsid[] = "$Id: i_x.c,v 1.6 1997/02/03 22:45:10 b1 Exp $";
 #include "doomgeneric.h"
 
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include <fcntl.h>

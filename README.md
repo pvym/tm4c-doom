@@ -45,12 +45,11 @@ Zbylá SDRAM není tímto linker skriptem využita.
 
 ## Build
 
-Makefile očekává TivaWare instalované v `SW-TM4C-2.2.0.295` a startup soubor z TivaWare BSP. Pokud je máte jinde, předejte cesty při buildu:
+Makefile nyní používá lokální `src/startup_gcc.c` odvozený z funkčního `x-v2` projektu. Externě je potřeba hlavně TivaWare `SW-TM4C-2.2.0.295`; pokud je jinde než v defaultu, předejte cestu při buildu:
 
 ```sh
 make \
-  TIVAWARE_DIR=/opt/ti/SW-TM4C-2.2.0.295 \
-  STARTUP=/opt/ti/SW-TM4C-2.2.0.295/examples/boards/ek-tm4c1294xl/startup_gcc.c
+  TIVAWARE_DIR=/opt/ti/SW-TM4C-2.2.0.295
 ```
 
 Výstupy:
@@ -63,7 +62,7 @@ Výstupy:
 
 1. Připojte shareware nebo retail WAD na microSD jako `doom1.wad` v rootu karty.
 2. Nahrajte `build/tm4c-doom.bin`/`.elf` do flash.
-3. Doplňte ve vašem board-specific startupu nebo init kódu skutečnou inicializaci EPI/SDRAM/LCD a podle potřeby override-něte weak funkci `TM4C_LCD_ControllerInit()`.
+3. `src/lcd_init.c` obsahuje raster/LCD pinmux a timing převzatý z `x-v2/display.c`; pokud potřebujete další board-specific kroky, doplňte je do `TM4C_LCD_ControllerInit()`.
 4. Po startu port inicializuje clock, GPIO vstupy, SD kartu a spustí Doom s argumenty `-iwad 0:/doom1.wad -mb 16 -nosound`.
 
 ## Poznámky k implementaci

@@ -7,8 +7,7 @@ CC := $(CROSS_COMPILE)gcc
 OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE := $(CROSS_COMPILE)size
 
-#TIVAWARE_DIR ?= ../../../SW-TM4C-2.2.0.295
-TIVAWARE_DIR ?= ../../../
+TIVAWARE_DIR ?= /opt/ti/SW-TM4C-2.2.0.295
 STARTUP ?= src/startup_gcc.c
 LINKER_SCRIPT ?= linker/tm4c129_sdram.ld
 
@@ -28,14 +27,10 @@ DEFINES := \
 #
 #
 
-CFLAGS = -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
-         -O2 -Wall -Wextra \
-         -I$(TIVAWARE_PATH)/inc \
-         -I$(TIVAWARE_PATH)/third_party/inc \
-         -I./inc \
-         -I./doomgeneric \
-         $(DOOMFLAGS) \
-         $(INCLUDES) $(DEFINES)
+CFLAGS := -std=c99 -Os -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+    -ffunction-sections -fdata-sections -fno-common -Wall -Wextra \
+    -specs=nano.specs -specs=nosys.specs \
+    $(INCLUDES) $(DEFINES)
 
 
 LDFLAGS := -T$(LINKER_SCRIPT) -Wl,--gc-sections -Wl,-Map,$(TARGET).map

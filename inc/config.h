@@ -5,6 +5,7 @@
 
 #include "inc/hw_memmap.h"
 #include "driverlib/gpio.h"
+#include "driverlib/lcd.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/ssi.h"
 
@@ -17,6 +18,19 @@
 
 #define TM4C_LCD_FRAMEBUFFER_ADDR   0x10000000UL
 #define TM4C_LCD_FRAMEBUFFER_SIZE   (TM4C_LCD_WIDTH * TM4C_LCD_HEIGHT * sizeof(uint16_t))
+#define TM4C_LCD_PIXEL_CLOCK_HZ     10000000UL
+#define TM4C_LCD_RASTER_FLAGS       (RASTER_TIMING_ACTIVE_LOW_PIXCLK | \
+                                     RASTER_TIMING_SYNCS_ON_RISING_PIXCLK | \
+                                     RASTER_TIMING_ACTIVE_LOW_HSYNC | \
+                                     RASTER_TIMING_ACTIVE_LOW_VSYNC | \
+                                     RASTER_TIMING_ACTIVE_HIGH_OE)
+#define TM4C_LCD_H_FRONT_PORCH      10U
+#define TM4C_LCD_H_BACK_PORCH       3U
+#define TM4C_LCD_H_PULSE_WIDTH      3U
+#define TM4C_LCD_V_FRONT_PORCH      3U
+#define TM4C_LCD_V_BACK_PORCH       3U
+#define TM4C_LCD_V_PULSE_WIDTH      3U
+#define TM4C_LCD_AC_BIAS            0U
 
 #define TM4C_SDRAM_BASE             0x60000000UL
 #define TM4C_SDRAM_SIZE             (32UL * 1024UL * 1024UL)

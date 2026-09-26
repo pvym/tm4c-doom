@@ -165,10 +165,20 @@ void cmap_to_fb(uint8_t *out, uint8_t *in, int in_pixels)
 
         if (s_Fb.bits_per_pixel == 16)
         {
-            // RGB565 packing
-            uint16_t p = ((c.r & 0xF8) << 8) |
-                         ((c.g & 0xFC) << 3) |
-                         (c.b >> 3);
+            uint16_t p = 0;
+
+            if (s_Fb.red.length != 0)
+            {
+                p |= (uint16_t)((c.r >> (8 - s_Fb.red.length)) << s_Fb.red.offset);
+            }
+            if (s_Fb.green.length != 0)
+            {
+                p |= (uint16_t)((c.g >> (8 - s_Fb.green.length)) << s_Fb.green.offset);
+            }
+            if (s_Fb.blue.length != 0)
+            {
+                p |= (uint16_t)((c.b >> (8 - s_Fb.blue.length)) << s_Fb.blue.offset);
+            }
 
 #ifdef SYS_BIG_ENDIAN
             p = swapLE16(p); // can't use SHORT() because this needs to stay unsigned

@@ -29,12 +29,12 @@ DEFINES := \
 
 CFLAGS := -std=c99 -Os -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
     -ffunction-sections -fdata-sections -fno-common -Wall -Wextra \
-    -specs=nano.specs -specs=nosys.specs \
+    -specs=nano.specs \
     $(INCLUDES) $(DEFINES)
 
 
 LDFLAGS := -T$(LINKER_SCRIPT) -Wl,--gc-sections -Wl,-Map,$(TARGET).map
-LIBS := $(TIVAWARE_DIR)/driverlib/gcc/libdriver.a -lm -lc -lnosys
+LIBS := $(TIVAWARE_DIR)/driverlib/gcc/libdriver.a -lm -lc
 
 DOOM_SRCS := $(filter-out \
     doomgeneric/doomgeneric_allegro.c \
@@ -57,6 +57,7 @@ PLATFORM_SRCS := \
     src/gpio_input.c \
     src/lcd_init.c \
     src/sd_driver.c \
+    src/syscalls.c \
     src/w_file_fatfs.c \
     fatfs/ff.c
 SRCS := $(DOOM_SRCS) $(PLATFORM_SRCS)

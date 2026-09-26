@@ -144,12 +144,11 @@ void cmap_to_rgb565(uint16_t * out, uint8_t * in, int in_pixels)
         r = ((uint16_t)(c.r >> 3)) << 11;
         g = ((uint16_t)(c.g >> 2)) << 5;
         b = ((uint16_t)(c.b >> 3)) << 0;
-        *out = (r | g | b);
+        for (j = 0; j < fb_scaling; j++) {
+            *out++ = (r | g | b);
+        }
 
         in++;
-        for (j = 0; j < fb_scaling; j++) {
-            out++;
-        }
     }
 }
 

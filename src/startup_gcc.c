@@ -18,13 +18,12 @@ static void IntDefaultHandler(void);
 
 extern int main(void);
 extern void SysTick_Handler(void);
-
-static uint32_t pui32Stack[256];
+extern uint32_t _estack;
 
 __attribute__ ((section(".isr_vector")))
 void (* const g_pfnVectors[])(void) =
 {
-    (void (*)(void))((uint32_t)pui32Stack + sizeof(pui32Stack)),
+    (void (*)(void))(&_estack),
     ResetISR,
     NmiSR,
     FaultISR,

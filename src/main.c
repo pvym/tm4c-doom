@@ -13,6 +13,18 @@
 
 void TM4C_SetSystemClockHz(uint32_t system_clock_hz);
 uint32_t ui32Val, ui32Freq, g_ui32SysClock;
+extern uint32_t __bss_sdram_start__;
+extern uint32_t __bss_sdram_end__;
+
+static void TM4C_ZeroExternalBss(void)
+{
+    uint32_t *ptr;
+
+    for (ptr = &__bss_sdram_start__; ptr < &__bss_sdram_end__; ++ptr)
+    {
+        *ptr = 0;
+    }
+}
 
 void InitGraphics(void) {
     // Set graphics library text rendering defaults.
@@ -114,7 +126,8 @@ int main(void)
     //                                      TM4C_SYSTEM_CLOCK_HZ);
 
     controlboard_init();
-   TM4C_SetSystemClockHz(g_ui32SysClock);
+    TM4C_SetSystemClockHz(g_ui32SysClock);
+    TM4C_ZeroExternalBss();
 
     LCD_Init();
     GPIO_InputInit();

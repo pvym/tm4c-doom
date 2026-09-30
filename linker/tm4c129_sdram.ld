@@ -73,6 +73,13 @@ SECTIONS
         _edata = .;
     } > SRAM
 
+    .bss_sdram (NOLOAD) :
+    {
+        __bss_sdram_start__ = .;
+        build/doomgeneric/*.o(.bss .bss.* COMMON)
+        __bss_sdram_end__ = .;
+    } > SDRAM_ZONE
+
     .bss :
     {
         _bss = .;
@@ -93,6 +100,7 @@ SECTIONS
     } > LCD_FB
 
     ASSERT(ADDR(.isr_vector) == ORIGIN(FLASH), ".isr_vector is not at flash origin");
+    ASSERT(__bss_sdram_end__ >= __bss_sdram_start__, "invalid SDRAM BSS bounds");
 }
 
 PROVIDE(_ldata = LOADADDR(.data));

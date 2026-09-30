@@ -26,11 +26,18 @@ DEFINES := \
 #     -ffunction-sections -fdata-sections -fno-common -Wall -Wextra $(INCLUDES) $(DEFINES)
 #
 #
+#RELEASE
+# CFLAGS := -Os -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+#     -ffunction-sections -fdata-sections -fno-common -Wall -Wextra \
+#     -specs=nano.specs \
+#     $(INCLUDES) $(DEFINES)
+# DEBUG
 
-CFLAGS := -Os -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+CFLAGS := -O0 -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
     -ffunction-sections -fdata-sections -fno-common -Wall -Wextra \
     -specs=nano.specs \
     $(INCLUDES) $(DEFINES)
+
 
 
 LDFLAGS := -T$(LINKER_SCRIPT) -Wl,--gc-sections -Wl,-Map,$(TARGET).map
@@ -57,6 +64,7 @@ PLATFORM_SRCS := \
     src/gpio_input.c \
     src/lcd_init.c \
     src/sd_driver.c \
+    src/sdram.c \
     src/syscalls.c \
     src/w_file_fatfs.c \
     fatfs/ff.c

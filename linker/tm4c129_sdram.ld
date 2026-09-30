@@ -1,11 +1,33 @@
-ENTRY(ResetISR)
+/******************************************************************************
+ *
+ * fl380-v2.ld - Linker configuration file for FL380.
+ *
+ * Copyright (c) 2013-2017 Texas Instruments Incorporated.  All rights reserved.
+ * Software License Agreement
+ *
+ * Texas Instruments (TI) is supplying this software for use solely and
+ * exclusively on TI's microcontroller products. The software is owned by
+ * TI and/or its suppliers, and is protected under applicable copyright
+ * laws. You may not combine this software with "viral" open-source
+ * software in order to form a larger program.
+ *
+ * THIS SOFTWARE IS PROVIDED "AS IS" AND WITH ALL FAULTS.
+ * NO WARRANTIES, WHETHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT
+ * NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE APPLY TO THIS SOFTWARE. TI SHALL NOT, UNDER ANY
+ * CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
+ * DAMAGES, FOR ANY REASON WHATSOEVER.
+ *
+ * This is part of revision 2.1.4.178 of the EK-TM4C129XNCZDA Firmware Package.
+ *
+ *****************************************************************************/
 
 MEMORY
 {
     FLASH      (rx)  : ORIGIN = 0x00000000, LENGTH = 1024K
-    SRAM       (rwx) : ORIGIN = 0x20000000, LENGTH = 8M
-    SDRAM_ZONE (rwx) : ORIGIN = 0x60000000, LENGTH = 8M
-    SDRAM_WAD  (rwx) : ORIGIN = 0x61000000, LENGTH = 8M
+    SRAM       (rwx) : ORIGIN = 0x20000000, LENGTH = 256K
+    SDRAM_ZONE (rwx) : ORIGIN = 0x10050000, LENGTH = 8M
+    SDRAM_WAD  (rwx) : ORIGIN = 0x11000000, LENGTH = 7M
     LCD_FB     (rwx) : ORIGIN = 0x10000000, LENGTH = 320K
 }
 
@@ -22,54 +44,46 @@ PROVIDE(__stack_top__            = ORIGIN(SRAM) + LENGTH(SRAM));
 
 SECTIONS
 {
+    .isr_vector :
+    {
+        . = ALIGN(4);
+        KEEP(*(.isr_vector))
+        . = ALIGN(4);
+    } > FLASH
+
     .text :
     {
-        KEEP(*(.isr_vector))
+        _text = .;
         *(.text*)
         *(.rodata*)
-        *(.glue_7)
-        *(.glue_7t)
-        *(.eh_frame*)
-        . = ALIGN(4);
+        KEEP (*(.init))
+        KEEP (*(.fini))
         _etext = .;
     } > FLASH
 
-  /DISCARD/ :
-       {
-        *(.ARM.exidx*)
-        *(.gnu.linkonce.armexidx.*)
-       }
 
-    .ARM.exidx :
+    .data : AT(ADDR(.text) + SIZEOF(.text))
     {
-        __exidx_start = .;
-        *(.ARM.exidx*)
-        __exidx_end = .;
-    } > FLASH
-
-    .data : AT (ADDR(.ARM.exidx) + SIZEOF(.ARM.exidx))
-    {
-        . = ALIGN(4);
         _data = .;
+        _ldata = LOADADDR (.data);
+        *(vtable)
         *(.data*)
-        . = ALIGN(4);
         _edata = .;
     } > SRAM
 
-    .bss (NOLOAD) :
+    .bss :
     {
-        . = ALIGN(4);
         _bss = .;
         *(.bss*)
         *(COMMON)
-        . = ALIGN(4);
         _ebss = .;
-    } > SRAM
-
-    .wad_cache (NOLOAD) :
+    } > SDRAM_ZONE
+    .dummy (DSECT):
     {
-        *(.wad_cache*)
-    } > SDRAM_WAD
+        _dummy = .;
+        *(.ARM.exidx*)
+        _dummy = .;
+    }
 
     .framebuffer (NOLOAD) :
     {

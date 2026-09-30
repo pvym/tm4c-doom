@@ -79,7 +79,7 @@ SECTIONS
         *(.bss*)
         *(COMMON)
         _ebss = .;
-    } > SDRAM_ZONE
+    } > SRAM
     .dummy (DSECT):
     {
         _dummy = .;

@@ -22,6 +22,8 @@
  *
  *****************************************************************************/
 
+ENTRY(ResetISR)
+
 MEMORY
 {
     FLASH      (rx)  : ORIGIN = 0x00000000, LENGTH = 1024K
@@ -44,7 +46,7 @@ PROVIDE(__stack_top__            = ORIGIN(SRAM) + LENGTH(SRAM));
 
 SECTIONS
 {
-    .isr_vector :
+    .isr_vector ORIGIN(FLASH) :
     {
         . = ALIGN(4);
         KEEP(*(.isr_vector))
@@ -89,6 +91,8 @@ SECTIONS
     {
         *(.framebuffer*)
     } > LCD_FB
+
+    ASSERT(ADDR(.isr_vector) == ORIGIN(FLASH), ".isr_vector is not at flash origin");
 }
 
 PROVIDE(_ldata = LOADADDR(.data));

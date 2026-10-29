@@ -19,6 +19,8 @@ typedef enum
 
 bool SD_DriverBusInit(void);
 sd_card_init_result_t SD_DriverCardInit(void);
+uint8_t SD_DriverCmd0Response(void);
+bool SD_DriverCmd0WaitReadyTimedOut(void);
 bool SD_DriverMount(void);
 uintptr_t SD_DriverWadCacheBase(void);
 size_t SD_DriverWadCacheSize(void);

@@ -41,6 +41,40 @@ static void TM4C_StopWithDiagnostic(uint16_t color)
     }
 }
 
+static void TM4C_StopWithCmd0Diagnostic(uint8_t response, bool wait_ready_timed_out)
+{
+    volatile uint16_t *framebuffer = LCD_GetFramebuffer();
+
+    LCD_Clear(0x8000U);
+    for (uint32_t bit = 0U; bit < 8U; ++bit)
+    {
+        uint16_t color = (response & (0x80U >> bit)) != 0U ? 0xFFFFU : 0x0000U;
+        uint32_t x_start = 40U + (bit * 50U);
+
+        for (uint32_t y = 110U; y < 210U; ++y)
+        {
+            for (uint32_t x = x_start; x < (x_start + 40U); ++x)
+            {
+                framebuffer[(y * TM4C_LCD_WIDTH) + x] = color;
+            }
+        }
+    }
+
+    for (uint32_t y = 240U; y < 260U; ++y)
+    {
+        uint16_t color = wait_ready_timed_out ? 0x001FU : 0x07E0U;
+        for (uint32_t x = 40U; x < 440U; ++x)
+        {
+            framebuffer[(y * TM4C_LCD_WIDTH) + x] = color;
+        }
+    }
+
+    IntMasterDisable();
+    while (1)
+    {
+    }
+}
+
 
 void controlboard_init(void) {
     // The FPU should be enabled because some compilers will use floating-
@@ -156,7 +190,8 @@ int main(void)
             TM4C_StopWithDiagnostic(0xF800U);
             break;
         case SD_CARD_INIT_CMD0_ERROR:
-            TM4C_StopWithDiagnostic(0x8000U);
+            TM4C_StopWithCmd0Diagnostic(SD_DriverCmd0Response(),
+                                        SD_DriverCmd0WaitReadyTimedOut());
             break;
         case SD_CARD_INIT_CMD8_ERROR:
             TM4C_StopWithDiagnostic(0xF81FU);

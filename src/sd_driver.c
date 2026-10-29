@@ -37,6 +37,9 @@ static DSTATUS s_disk_status = STA_NOINIT;
 static uint8_t s_card_type;
 static bool s_bus_initialized;
 static sd_card_init_result_t s_card_init_result = SD_CARD_INIT_BUS_ERROR;
+static uint8_t s_cmd0_response = 0xFFU;
+static bool s_cmd0_wait_ready_timed_out;
+static bool s_last_command_wait_ready_timed_out;
 
 static void SD_Select(bool selected)
 {
@@ -117,8 +120,10 @@ static uint8_t SD_SendCommand(uint8_t command, uint32_t argument)
     SD_Deselect();
     SD_Select(true);
 
+    s_last_command_wait_ready_timed_out = false;
     if (!SD_WaitReady(50000U))
     {
+        s_last_command_wait_ready_timed_out = true;
         SD_Deselect();
         return 0xFFU;
     }
@@ -309,7 +314,10 @@ DSTATUS disk_initialize(BYTE pdrv)
 
     s_card_type = 0U;
 
-    if (SD_SendCommand(SD_CMD0, 0U) != 1U)
+    response = SD_SendCommand(SD_CMD0, 0U);
+    s_cmd0_response = response;
+    s_cmd0_wait_ready_timed_out = s_last_command_wait_ready_timed_out;
+    if (response != 1U)
     {
         s_card_init_result = SD_CARD_INIT_CMD0_ERROR;
         SD_Deselect();
@@ -537,6 +545,16 @@ sd_card_init_result_t SD_DriverCardInit(void)
 {
     (void)disk_initialize(0U);
     return s_card_init_result;
+}
+
+uint8_t SD_DriverCmd0Response(void)
+{
+    return s_cmd0_response;
+}
+
+bool SD_DriverCmd0WaitReadyTimedOut(void)
+{
+    return s_cmd0_wait_ready_timed_out;
 }
 
 bool SD_DriverMount(void)

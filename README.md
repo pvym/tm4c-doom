@@ -52,6 +52,10 @@ chybě program zůstane stát na barvě chyby:
 Úspěšné nastavení SPI ověřuje konfiguraci periferií a pinů; skutečnou
 komunikaci s kartou ověřuje až inicializace karty.
 
+Při chybě CMD0 se zobrazí osm světlých/tmavých polí zleva v pořadí bitů
+`b7` až `b0` vrácené odpovědi R1; očekávaná odpověď je `0x01`. Spodní proužek
+je modrý, pokud karta před příkazem neuvolnila MISO do stavu HIGH, jinak zelený.
+
 ## Paměťový layout
 
 - `0x60000000 .. 0x60FFFFFF` – Doom zone heap (`16 MiB`)

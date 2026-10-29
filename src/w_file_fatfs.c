@@ -20,6 +20,27 @@ static fatfs_wad_file_t *s_cached_wad;
 
 extern wad_file_class_t fatfs_wad_file;
 
+extern void FaultReport(uint32_t *stack);
+
+// Ladění: zobrazí stav struktury, pokud je file_class poškozená.
+static void W_FatFs_Check(fatfs_wad_file_t *r, uint32_t stage)
+{
+    uint32_t diag[8];
+
+    if (r->wad.file_class == &fatfs_wad_file)
+    {
+        return;
+    }
+
+    diag[6] = stage;
+    diag[5] = (uint32_t)r;
+    diag[1] = (uint32_t)r->wad.file_class;
+    diag[3] = r->wad.length;
+    diag[0] = (uint32_t)r->cache;
+    diag[2] = diag[4] = diag[7] = 0;
+    FaultReport(diag);
+}
+
 static wad_file_t *W_FatFs_OpenFile(char *path)
 {
     fatfs_wad_file_t *result;
@@ -42,6 +63,7 @@ static wad_file_t *W_FatFs_OpenFile(char *path)
 
     result->wad.file_class = &fatfs_wad_file;
     result->wad.length = (unsigned int)f_size(&result->file);
+    W_FatFs_Check(result, 1U);
 
     if ((s_cached_wad == NULL) && (result->wad.length <= SD_DriverWadCacheSize()))
     {
@@ -53,6 +75,7 @@ static wad_file_t *W_FatFs_OpenFile(char *path)
             (f_read(&result->file, result->cache, result->cache_len, &bytes_read) == FR_OK) &&
             (bytes_read == result->cache_len))
         {
+            W_FatFs_Check(result, 2U);
             result->wad.mapped = result->cache;
             s_cached_wad = result;
             (void)f_lseek(&result->file, 0U);
@@ -65,6 +88,7 @@ static wad_file_t *W_FatFs_OpenFile(char *path)
         }
     }
 
+    W_FatFs_Check(result, 3U);
     return &result->wad;
 }
 

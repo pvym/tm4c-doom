@@ -224,23 +224,37 @@ NmiSR(void)
     }
 }
 
-// Každý řádek = 32 bitů (MSB vlevo), 10 px na bit: PC, LR, CFSR, BFAR.
 extern volatile uint16_t *LCD_GetFramebuffer(void);
 
+// Font 3x5, řádky po 3 bitech, horní řádek nejvýše.
+static const uint16_t g_fault_font[16] =
+{
+    0x7B6F, 0x2C97, 0x73E7, 0x73CF, 0x5BC9, 0x79CF, 0x79EF, 0x7292,
+    0x7BEF, 0x7BCF, 0x2BED, 0x6BAE, 0x7247, 0x6B6E, 0x79E7, 0x79E4
+};
+
 static void
-FaultDrawWord(uint32_t value, uint32_t y_start, uint16_t one_color)
+FaultDrawWord(uint32_t value, uint32_t y_start, uint16_t color)
 {
     volatile uint16_t *fb = LCD_GetFramebuffer();
 
-    for (uint32_t bit = 0; bit < 32; ++bit)
+    for (uint32_t d = 0; d < 8; ++d)
     {
-        uint16_t color = (value & (0x80000000UL >> bit)) ? one_color : 0x0000;
+        uint16_t glyph = g_fault_font[(value >> (28 - (4 * d))) & 0xF];
 
-        for (uint32_t y = y_start; y < (y_start + 30); ++y)
+        for (uint32_t row = 0; row < 5; ++row)
         {
-            for (uint32_t x = bit * 10; x < ((bit * 10) + 8); ++x)
+            for (uint32_t col = 0; col < 3; ++col)
             {
-                fb[(y * 320) + x] = color;
+                uint16_t c = (glyph & (1U << (14 - ((row * 3) + col)))) ? color : 0x0000;
+
+                for (uint32_t y = 0; y < 8; ++y)
+                {
+                    for (uint32_t x = 0; x < 8; ++x)
+                    {
+                        fb[((y_start + (row * 8) + y) * 320) + (d * 36) + (col * 8) + x] = c;
+                    }
+                }
             }
         }
     }

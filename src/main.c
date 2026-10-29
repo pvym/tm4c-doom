@@ -199,6 +199,9 @@ int main(void)
     //                                       SYSCTL_CFG_VCO_480),
     //                                      TM4C_SYSTEM_CLOCK_HZ);
 
+    // Debug: vypnout write buffer, aby bus fault byl přesný (PC = chybný zápis).
+    *(volatile uint32_t *)0xE000E008UL |= 0x2UL;
+
     controlboard_init();
     TM4C_SetSystemClockHz(g_ui32SysClock);
     TM4C_ZeroExternalBss();

@@ -506,7 +506,8 @@ void InitSDRAM(void) {
 	// state which means we will not use the low power self-refresh state.
 	// Set the SDRAM size to 64MB with a refresh interval of 1024 clock ticks.
 	//
-	EPIConfigSDRAMSet(EPI0_BASE, (ui32Freq | EPI_SDRAM_FULL_POWER | EPI_SDRAM_SIZE_256MBIT), 1024);
+	EPIConfigSDRAMSet(EPI0_BASE, (ui32Freq | EPI_SDRAM_FULL_POWER | EPI_SDRAM_SIZE_256MBIT), 400);
+	// 256Mbit SDRAM: 8192 řádků / 64 ms => refresh <= 7.8 us; 400 taktů při 60 MHz = 6.7 us.
 
 
 	// 	EPIConfigSDRAMSet(EPI0_BASE, (EPI_SDRAM_CORE_FREQ_50_100 | EPI_SDRAM_FULL_POWER | EPI_SDRAM_SIZE_256MBIT), 1024);

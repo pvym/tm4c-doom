@@ -91,7 +91,7 @@ uint32_t DG_GetTicksMs(void)
 
 int DG_GetKey(int *pressed, unsigned char *key)
 {
-    return GPIO_InputPollEvent(pressed, key);
+    (void)pressed; (void)key; return 0;  // GPIO_InputPollEvent dočasně vypnuto
 }
 
 void DG_SetWindowTitle(const char *title)

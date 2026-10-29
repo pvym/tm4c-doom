@@ -287,7 +287,7 @@ int main(void)
     TM4C_ZeroExternalBss();
 
     LCD_Init();
-    GPIO_InputInit();
+    // GPIO_InputInit();  // tlačítka dočasně vypnutá (ladění NMI)
 
     LCD_Clear(0x001FU);
     if (!SD_DriverBusInit())

@@ -36,6 +36,11 @@
 #include <sys/types.h>
 #endif
 
+#ifdef TM4C_USE_FATFS
+#include "ff.h"
+#include "sd_driver.h"
+#endif
+
 #include "doomtype.h"
 
 #include "deh_str.h"
@@ -65,6 +70,16 @@ void M_MakeDirectory(char *path)
 
 boolean M_FileExists(char *filename)
 {
+#ifdef TM4C_USE_FATFS
+    FILINFO info;
+
+    if (!SD_DriverMount())
+    {
+        return false;
+    }
+
+    return f_stat(filename, &info) == FR_OK;
+#else
     FILE *fstream;
 
     fstream = fopen(filename, "r");
@@ -81,6 +96,7 @@ boolean M_FileExists(char *filename)
 
         return errno == EISDIR;
     }
+#endif
 }
 
 //

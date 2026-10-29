@@ -274,7 +274,9 @@ FaultReport(uint32_t *stack)
     FaultDrawWord(stack[5], 80, 0xFFE0);
     FaultDrawWord(HWREG(NVIC_FAULT_STAT), 140, 0x07FF);
     FaultDrawWord(HWREG(NVIC_FAULT_ADDR), 200, 0x07E0);
-    FaultDrawWord((uint32_t)stack, 260, 0xF81F);
+    FaultDrawWord(stack[1], 260, 0xF81F);
+    FaultDrawWord(stack[3], 320, 0xFFFF);
+    FaultDrawWord(stack[0], 380, 0xFFE0);
 
     while (1)
     {

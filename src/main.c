@@ -48,11 +48,11 @@ static void TM4C_DrawBits(uint8_t value, uint32_t y_start, uint16_t one_color)
     for (uint32_t bit = 0U; bit < 8U; ++bit)
     {
         uint16_t color = (value & (0x80U >> bit)) != 0U ? one_color : 0x0000U;
-        uint32_t x_start = 40U + (bit * 50U);
+        uint32_t x_start = 16U + (bit * 38U);
 
         for (uint32_t y = y_start; y < (y_start + 60U); ++y)
         {
-            for (uint32_t x = x_start; x < (x_start + 40U); ++x)
+            for (uint32_t x = x_start; x < (x_start + 30U); ++x)
             {
                 framebuffer[(y * TM4C_LCD_WIDTH) + x] = color;
             }
@@ -80,11 +80,11 @@ static void TM4C_StopWithCmd0Diagnostic(uint8_t response, bool wait_ready_timed_
     for (uint32_t bit = 0U; bit < 8U; ++bit)
     {
         uint16_t color = (response & (0x80U >> bit)) != 0U ? 0xFFFFU : 0x0000U;
-        uint32_t x_start = 40U + (bit * 50U);
+        uint32_t x_start = 16U + (bit * 38U);
 
         for (uint32_t y = 110U; y < 210U; ++y)
         {
-            for (uint32_t x = x_start; x < (x_start + 40U); ++x)
+            for (uint32_t x = x_start; x < (x_start + 30U); ++x)
             {
                 framebuffer[(y * TM4C_LCD_WIDTH) + x] = color;
             }
@@ -94,7 +94,7 @@ static void TM4C_StopWithCmd0Diagnostic(uint8_t response, bool wait_ready_timed_
     for (uint32_t y = 240U; y < 260U; ++y)
     {
         uint16_t color = wait_ready_timed_out ? 0x001FU : 0x07E0U;
-        for (uint32_t x = 40U; x < 440U; ++x)
+        for (uint32_t x = 16U; x < 304U; ++x)
         {
             framebuffer[(y * TM4C_LCD_WIDTH) + x] = color;
         }

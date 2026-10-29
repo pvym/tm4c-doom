@@ -52,6 +52,7 @@ void SysTick_Handler(void)
 
 void DG_Init(void)
 {
+    LCD_Clear(0U);
     s_ticks_ms = 0U;
     SysTickPeriodSet(s_system_clock_hz / 1000U);
     SysTickIntEnable();
@@ -61,50 +62,16 @@ void DG_Init(void)
 
 void DG_DrawFrame(void)
 {
-    volatile uint16_t *framebuffer = LCD_GetFramebuffer();
-    const uint8_t *source = (const uint8_t *)DG_ScreenBuffer;
-    const uint32_t x_offset = (TM4C_LCD_WIDTH - TM4C_DOOM_WIDTH) / 2U;
-    const uint32_t y_offset = (TM4C_LCD_HEIGHT - TM4C_DOOM_HEIGHT) / 2U;
+    volatile uint16_t *dst = LCD_GetFramebuffer();
+    const uint8_t *src = (const uint8_t *)DG_ScreenBuffer;
 
     UpdatePaletteCache();
 
-    for (uint32_t y = 0; y < y_offset; ++y)
+    /* Panel width == Doom width, so the Doom image is a contiguous block
+       starting at the top-left corner (framebuffer address 0x10000000). */
+    for (uint32_t i = 0; i < (TM4C_DOOM_WIDTH * TM4C_DOOM_HEIGHT); ++i)
     {
-        volatile uint16_t *row = framebuffer + (y * TM4C_LCD_WIDTH);
-        for (uint32_t x = 0; x < TM4C_LCD_WIDTH; ++x)
-        {
-            row[x] = 0U;
-        }
-    }
-
-    for (uint32_t y = 0; y < TM4C_DOOM_HEIGHT; ++y)
-    {
-        volatile uint16_t *row = framebuffer + ((y + y_offset) * TM4C_LCD_WIDTH);
-        const uint8_t *src_row = source + (y * TM4C_DOOM_WIDTH);
-
-        for (uint32_t x = 0; x < x_offset; ++x)
-        {
-            row[x] = 0U;
-        }
-
-        for (uint32_t x = 0; x < TM4C_DOOM_WIDTH; ++x)
-        {
-            row[x + x_offset] = s_palette565[src_row[x]];
-        }
-
-        for (uint32_t x = x_offset + TM4C_DOOM_WIDTH; x < TM4C_LCD_WIDTH; ++x)
-        {
-            row[x] = 0U;
-        }
-    }
-
-    for (uint32_t y = y_offset + TM4C_DOOM_HEIGHT; y < TM4C_LCD_HEIGHT; ++y)
-    {
-        volatile uint16_t *row = framebuffer + (y * TM4C_LCD_WIDTH);
-        for (uint32_t x = 0; x < TM4C_LCD_WIDTH; ++x)
-        {
-            row[x] = 0U;
-        }
+        dst[i] = s_palette565[src[i]];
     }
 }
 

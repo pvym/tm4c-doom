@@ -1,13 +1,13 @@
 # tm4c-doom
 
-Portace Doomgeneric na TI TM4C129XNCZAD pro bare-metal build s `arm-none-eabi-gcc`, TivaWare `SW-TM4C-2.2.0.295`, RGB565 LCD 480×320 na 16bit sběrnici a WAD soubor na microSD přes SSI1.
+Portace Doomgeneric na TI TM4C129XNCZAD pro bare-metal build s `arm-none-eabi-gcc`, TivaWare `SW-TM4C-2.2.0.295`, RGB565 LCD 320×480 (na výšku) na 16bit sběrnici a WAD soubor na microSD přes SSI1.
 
 ## Struktura
 
 - `doomgeneric/` – vendored upstream zdrojáky Doomgeneric
 - `fatfs/` – minimální FatFs vrstva pro read-only mount SD karty
 - `inc/config.h` – adresy SDRAM/framebufferu, mapování GPIO vstupů, SSI1 piny
-- `src/doomgeneric_tm4c.c` – SysTick timing, vstupní polling, paleta → RGB565, centrování 320×200 do 480×320
+- `src/doomgeneric_tm4c.c` – SysTick timing, vstupní polling, paleta → RGB565, kopie 320×200 do levého horního rohu 320×480
 - `src/gpio_input.c` – inicializace a polling tlačítek
 - `src/lcd_init.c` – framebuffer clear + weak hook pro board-specific LCD/EPI init
 - `src/sd_driver.c` – SSI1 SPI-mode SD driver + FatFs disk I/O
@@ -69,7 +69,7 @@ pravděpodobně fyzicky držená v LOW nebo pinmux/SSI vstup nečte očekávaný
 
 EPI SDRAM (32 MiB) je namapovaná na `0x10000000` (`EPI_ADDR_CODE_BASE_1`):
 
-- `0x10000000 .. 0x1004FFFF` – LCD framebuffer (`480 × 320 × RGB565`, `307200 B`)
+- `0x10000000 .. 0x1004FFFF` – LCD framebuffer (`320 × 480 × RGB565` na výšku, `307200 B`); Doom `320 × 200` se kreslí od levého horního rohu (`0x10000000`), zbytek je černý
 - `0x10050000 .. 0x101FFFFF` – BSS Doomu (`.bss_sdram`)
 - `0x10200000 .. 0x111FFFFF` – Doom zone heap (`16 MiB`)
 - `0x11200000 .. 0x119FFFFF` – WAD cache (`8 MiB`)
@@ -100,7 +100,7 @@ Výstupy:
 
 ## Poznámky k implementaci
 
-- Render zůstává bez škálování; `doomgeneric_tm4c.c` pouze centruje 320×200 obraz do 480×320 framebufferu a vyplní border černou.
+- Render zůstává bez škálování; `doomgeneric_tm4c.c` kopíruje 320×200 obraz do levého horního rohu 320×480 framebufferu; zbytek zůstává černý.
 - `src/w_file_fatfs.c` při dostatečné velikosti cache načte celý WAD do rezervované SDRAM oblasti, jinak čte přímo přes FatFs.
 - Zvuk ani networking nejsou zapnuté.
 - `src/lcd_init.c` nyní obsahuje i ST7796S RGB/SPI init sekvenci odvozenou z `x-v2/Powertip320x480x16_st7796s_spi.c`.

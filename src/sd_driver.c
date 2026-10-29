@@ -269,6 +269,10 @@ static bool SD_BusInit(void)
     GPIOPinTypeSSI(TM4C_SD_CLK_PORT, TM4C_SD_CLK_PIN);
     GPIOPinTypeSSI(TM4C_SD_MOSI_PORT, TM4C_SD_MOSI_PIN);
     GPIOPinTypeSSI(TM4C_SD_MISO_PORT, TM4C_SD_MISO_PIN);
+    GPIOPadConfigSet(TM4C_SD_MISO_PORT,
+                     TM4C_SD_MISO_PIN,
+                     GPIO_STRENGTH_2MA,
+                     GPIO_PIN_TYPE_STD_WPU);
 
     GPIOPinTypeGPIOOutput(TM4C_SD_CS_PORT, TM4C_SD_CS_PIN);
     GPIOPadConfigSet(TM4C_SD_CS_PORT,

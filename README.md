@@ -55,6 +55,8 @@ komunikaci s kartou ověřuje až inicializace karty.
 Při chybě CMD0 se zobrazí osm světlých/tmavých polí zleva v pořadí bitů
 `b7` až `b0` vrácené odpovědi R1; očekávaná odpověď je `0x01`. Spodní proužek
 je modrý, pokud karta před příkazem neuvolnila MISO do stavu HIGH, jinak zelený.
+MISO (PE5) má zapnutý interní pull-up; pokud proužek zůstane modrý, linka je
+pravděpodobně fyzicky držená v LOW nebo pinmux/SSI vstup nečte očekávaný pin.
 
 ## Paměťový layout
 

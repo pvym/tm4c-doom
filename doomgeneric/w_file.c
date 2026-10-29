@@ -99,22 +99,19 @@ size_t W_Read(wad_file_t *wad, unsigned int offset,
               void *buffer, size_t buffer_len)
 {
 #ifdef TM4C_USE_FATFS
+    if (wad->file_class != &fatfs_wad_file)
     {
-        // Ladění: ukazatel na Read musí být ve flash (< 0x100000), jinak zobraz na LCD.
+        // Ladění: zobrazí wad, file_class, délku, mapped a adresu fatfs_wad_file.
         extern void FaultReport(uint32_t *stack);
         uint32_t diag[8];
 
         diag[6] = (uint32_t)wad;
         diag[5] = (uint32_t)wad->file_class;
-        diag[1] = (uint32_t)wad->file_class->Read;
-        diag[3] = (uint32_t)&fatfs_wad_file;
-        diag[0] = (uint32_t)buffer_len;
+        diag[1] = (uint32_t)wad->length;
+        diag[3] = (uint32_t)wad->mapped;
+        diag[0] = (uint32_t)&fatfs_wad_file;
         diag[2] = diag[4] = diag[7] = 0;
-
-        if (diag[1] >= 0x100000UL)
-        {
-            FaultReport(diag);
-        }
+        FaultReport(diag);
     }
 #endif
     return wad->file_class->Read(wad, offset, buffer, buffer_len);

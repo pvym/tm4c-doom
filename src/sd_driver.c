@@ -269,6 +269,14 @@ static bool SD_BusInit(void)
 
     GPIOPinTypeSSI(TM4C_SD_CLK_PORT, TM4C_SD_CLK_PIN);
     GPIOPinTypeSSI(TM4C_SD_MOSI_PORT, TM4C_SD_MOSI_PIN);
+    GPIOPadConfigSet(TM4C_SD_CLK_PORT,
+                     TM4C_SD_CLK_PIN,
+                     GPIO_STRENGTH_8MA,
+                     GPIO_PIN_TYPE_STD);
+    GPIOPadConfigSet(TM4C_SD_MOSI_PORT,
+                     TM4C_SD_MOSI_PIN,
+                     GPIO_STRENGTH_8MA,
+                     GPIO_PIN_TYPE_STD);
     GPIOPinTypeSSI(TM4C_SD_MISO_PORT, TM4C_SD_MISO_PIN);
     GPIOPadConfigSet(TM4C_SD_MISO_PORT,
                      TM4C_SD_MISO_PIN,
@@ -312,16 +320,27 @@ DSTATUS disk_initialize(BYTE pdrv)
         return s_disk_status;
     }
 
-    for (uint32_t i = 0; i < 10U; ++i)
-    {
-        SD_SPITransfer(0xFFU);
-    }
-
     s_card_type = 0U;
 
-    response = SD_SendCommand(SD_CMD0, 0U);
-    s_cmd0_response = response;
-    s_cmd0_wait_ready_timed_out = s_last_command_wait_ready_timed_out;
+    for (uint32_t attempt = 0U; attempt < 20U; ++attempt)
+    {
+        SD_Deselect();
+        for (uint32_t i = 0; i < 10U; ++i)
+        {
+            SD_SPITransfer(0xFFU);
+        }
+
+        response = SD_SendCommand(SD_CMD0, 0U);
+        s_cmd0_response = response;
+        s_cmd0_wait_ready_timed_out = s_last_command_wait_ready_timed_out;
+        if (response == 1U)
+        {
+            break;
+        }
+
+        SysCtlDelay(TM4C_SYSTEM_CLOCK_HZ / 3000U);
+    }
+
     if (response != 1U)
     {
         s_card_init_result = SD_CARD_INIT_CMD0_ERROR;

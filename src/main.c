@@ -104,6 +104,43 @@ static void TM4C_SdramAliasTest(void)
     }
 }
 
+// Test retence a plného rozsahu: zapíše vzor do zone, počká 3 s a ověří; pak totéž s inverzí.
+// Při chybě: horní řádek = adresa, dolní = XOR(přečteno, očekáváno).
+static void TM4C_SdramRetentionTest(void)
+{
+    volatile uint32_t *start = (volatile uint32_t *)TM4C_DOOM_ZONE_HEAP_ADDR;
+    volatile uint32_t *end = (volatile uint32_t *)(TM4C_DOOM_ZONE_HEAP_ADDR + TM4C_DOOM_ZONE_HEAP_SIZE);
+    volatile uint32_t *p;
+
+    for (uint32_t pass = 0U; pass < 2U; ++pass)
+    {
+        uint32_t mask = (pass == 0U) ? 0x5A5AA5A5UL : 0xA5A55A5AUL;
+
+        for (p = start; p < end; ++p)
+        {
+            *p = (uint32_t)p ^ mask;
+        }
+
+        SysCtlDelay((g_ui32SysClock / 3UL) * 3UL);
+
+        for (p = start; p < end; ++p)
+        {
+            uint32_t expected = (uint32_t)p ^ mask;
+            uint32_t v = *p;
+
+            if (v != expected)
+            {
+                TM4C_StopWithAddress((uint32_t)p, v ^ expected);
+            }
+        }
+    }
+
+    for (p = start; p < end; ++p)
+    {
+        *p = 0U;
+    }
+}
+
 void InitGraphics(void) {
     // Set graphics library text rendering defaults.
     // GrRaster16BppDriverInit(g_pui32DisplayBuffer);
@@ -373,6 +410,7 @@ int main(void)
     TM4C_SdramBssTest();
     TM4C_SdramReadStress();
     TM4C_SdramAliasTest();
+    TM4C_SdramRetentionTest();
 
     LCD_Clear(0x07E0U);
     doomgeneric_Create(6, doom_argv);

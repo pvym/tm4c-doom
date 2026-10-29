@@ -67,9 +67,12 @@ pravděpodobně fyzicky držená v LOW nebo pinmux/SSI vstup nečte očekávaný
 
 ## Paměťový layout
 
-- `0x60000000 .. 0x60FFFFFF` – Doom zone heap (`16 MiB`)
-- `0x61000000 .. 0x617FFFFF` – WAD cache (`8 MiB`)
+EPI SDRAM (32 MiB) je namapovaná na `0x10000000` (`EPI_ADDR_CODE_BASE_1`):
+
 - `0x10000000 .. 0x1004FFFF` – LCD framebuffer (`480 × 320 × RGB565`, `307200 B`)
+- `0x10050000 .. 0x101FFFFF` – BSS Doomu (`.bss_sdram`)
+- `0x10200000 .. 0x111FFFFF` – Doom zone heap (`16 MiB`)
+- `0x11200000 .. 0x119FFFFF` – WAD cache (`8 MiB`)
 
 Zbylá SDRAM není tímto linker skriptem využita.
 

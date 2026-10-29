@@ -28,8 +28,9 @@ MEMORY
 {
     FLASH      (rx)  : ORIGIN = 0x00000000, LENGTH = 1024K
     SRAM       (rwx) : ORIGIN = 0x20000000, LENGTH = 256K
-    SDRAM_ZONE (rwx) : ORIGIN = 0x10050000, LENGTH = 8M
-    SDRAM_WAD  (rwx) : ORIGIN = 0x11000000, LENGTH = 7M
+    SDRAM_BSS  (rwx) : ORIGIN = 0x10050000, LENGTH = 0x1B0000
+    SDRAM_ZONE (rwx) : ORIGIN = 0x10200000, LENGTH = 16M
+    SDRAM_WAD  (rwx) : ORIGIN = 0x11200000, LENGTH = 8M
     LCD_FB     (rwx) : ORIGIN = 0x10000000, LENGTH = 320K
 }
 
@@ -78,7 +79,7 @@ SECTIONS
         __bss_sdram_start__ = .;
         build/doomgeneric/*.o(.bss .bss.* COMMON)
         __bss_sdram_end__ = .;
-    } > SDRAM_ZONE
+    } > SDRAM_BSS
 
     .bss :
     {

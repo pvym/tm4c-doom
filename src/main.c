@@ -28,6 +28,7 @@ static void TM4C_ZeroExternalBss(void)
 }
 
 static void TM4C_StopWithAddress(uint32_t address, uint32_t value);
+static void TM4C_DrawWord(uint32_t value, uint32_t y_start, uint16_t color);
 
 // Test čtení/zápisu BSS oblasti v SDRAM; při chybě zobrazí adresu (bitově).
 static void TM4C_SdramBssTest(void)

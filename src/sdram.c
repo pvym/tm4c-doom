@@ -454,6 +454,16 @@ void InitSDRAM(void) {
 	GPIOPinTypeEPI(GPIO_PORTM_BASE, EPI_PORTM_PINS);
 	GPIOPinTypeEPI(GPIO_PORTN_BASE, EPI_PORTN_PINS);
 
+	// Silnější výstupy EPI pro stabilní SDRAM sběrnici.
+	GPIOPadConfigSet(GPIO_PORTA_BASE, EPI_PORTA_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTB_BASE, EPI_PORTB_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTC_BASE, EPI_PORTC_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTG_BASE, EPI_PORTG_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTK_BASE, EPI_PORTK_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTL_BASE, EPI_PORTL_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTM_BASE, EPI_PORTM_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+	GPIOPadConfigSet(GPIO_PORTN_BASE, EPI_PORTN_PINS, GPIO_STRENGTH_8MA, GPIO_PIN_TYPE_STD);
+
 	//
 	// Is our current system clock faster than we can drive the SDRAM clock?
 	//
@@ -461,7 +471,8 @@ void InitSDRAM(void) {
 		//
 		// Yes. Set the EPI clock to half the system clock.
 		//
-		EPIDividerSet(EPI0_BASE, 1);
+		// Ladění stability: EPI = SysClk/4 (30 MHz) místo SysClk/2.
+		EPIDividerSet(EPI0_BASE, 2);
 	}
 	else {
 		//
@@ -506,7 +517,10 @@ void InitSDRAM(void) {
 	// state which means we will not use the low power self-refresh state.
 	// Set the SDRAM size to 64MB with a refresh interval of 1024 clock ticks.
 	//
-	EPIConfigSDRAMSet(EPI0_BASE, (ui32Freq | EPI_SDRAM_FULL_POWER | EPI_SDRAM_SIZE_256MBIT), 400);
+	if (g_ui32SysClock > 60000000) {
+		ui32Freq = EPI_SDRAM_CORE_FREQ_30_50;
+	}
+	EPIConfigSDRAMSet(EPI0_BASE, (ui32Freq | EPI_SDRAM_FULL_POWER | EPI_SDRAM_SIZE_256MBIT), 200);
 	// 256Mbit SDRAM: 8192 řádků / 64 ms => refresh <= 7.8 us; 400 taktů při 60 MHz = 6.7 us.
 
 

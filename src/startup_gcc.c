@@ -224,12 +224,58 @@ NmiSR(void)
     }
 }
 
+// Každý řádek = 32 bitů (MSB vlevo), 10 px na bit: PC, LR, CFSR, BFAR.
+extern volatile uint16_t *LCD_GetFramebuffer(void);
+
 static void
-FaultISR(void)
+FaultDrawWord(uint32_t value, uint32_t y_start, uint16_t one_color)
 {
+    volatile uint16_t *fb = LCD_GetFramebuffer();
+
+    for (uint32_t bit = 0; bit < 32; ++bit)
+    {
+        uint16_t color = (value & (0x80000000UL >> bit)) ? one_color : 0x0000;
+
+        for (uint32_t y = y_start; y < (y_start + 30); ++y)
+        {
+            for (uint32_t x = bit * 10; x < ((bit * 10) + 8); ++x)
+            {
+                fb[(y * 320) + x] = color;
+            }
+        }
+    }
+}
+
+void
+FaultReport(uint32_t *stack)
+{
+    volatile uint16_t *fb = LCD_GetFramebuffer();
+
+    for (uint32_t i = 0; i < (320UL * 480UL); ++i)
+    {
+        fb[i] = 0xF800;
+    }
+
+    FaultDrawWord(stack[6], 20, 0xFFFF);
+    FaultDrawWord(stack[5], 80, 0xFFE0);
+    FaultDrawWord(HWREG(NVIC_FAULT_STAT), 140, 0x07FF);
+    FaultDrawWord(HWREG(NVIC_FAULT_ADDR), 200, 0x07E0);
+    FaultDrawWord((uint32_t)stack, 260, 0xF81F);
+
     while (1)
     {
     }
+}
+
+static void __attribute__((naked))
+FaultISR(void)
+{
+    __asm volatile(
+        "tst lr, #4\n"
+        "ite eq\n"
+        "mrseq r0, msp\n"
+        "mrsne r0, psp\n"
+        "b FaultReport\n");
 }
 
 static void

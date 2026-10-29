@@ -18,22 +18,33 @@ Portace Doomgeneric na TI TM4C129XNCZAD pro bare-metal build s `arm-none-eabi-gc
 
 Mapování je definováno v `inc/config.h`:
 
-- `PA2` – šipka nahoru
-- `PA3` – šipka dolů
-- `PA4` – šipka vlevo
-- `PA5` – šipka vpravo
-- `PB4` – FIRE / shoot
-- `PC4` – USE
-- `PC5` – MENU / ESC
+- `PE3` – šipka nahoru
+- `PD4` – šipka dolů
+- `PD5` – šipka vlevo
+- `PD6` – šipka vpravo
+- `PD7` – FIRE / shoot
+- `PE7` – USE
+- `PD1` – MENU / ESC
 
 SD karta používá:
 
 - `PB5` – SSI1 CLK
+- `PB4` – SSI1 FSS / SD card CS (software-controlled)
 - `PE4` – SSI1 MOSI
 - `PE5` – SSI1 MISO
-- `PB0` – software CS (navržený výchozí pin)
 
 Tlačítka jsou očekávána jako active-low se zapnutými interními pull-up rezistory.
+
+Při startu se na displeji zobrazí diagnostická barva aktuální fáze SD. Při
+chybě program zůstane stát na barvě chyby:
+
+- modrá – nastavení SPI sběrnice; červená znamená chybu této fáze
+- žlutá – inicializace SD karty; oranžová znamená, že karta neodpovídá
+- azurová – připojení FAT filesystému; purpurová znamená chybu filesystému
+- zelená – všechny fáze uspěly a spouští se Doom
+
+Úspěšné nastavení SPI ověřuje konfiguraci periferií a pinů; skutečnou
+komunikaci s kartou ověřuje až žlutá fáze inicializace karty.
 
 ## Paměťový layout
 

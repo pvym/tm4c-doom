@@ -35,6 +35,7 @@
 static FATFS s_fatfs;
 static DSTATUS s_disk_status = STA_NOINIT;
 static uint8_t s_card_type;
+static bool s_bus_initialized;
 
 static void SD_Select(bool selected)
 {
@@ -223,26 +224,36 @@ static DWORD SD_SectorCount(void)
     return sectors;
 }
 
-static void SD_BusInit(void)
+static bool SD_BusInit(void)
 {
-    SysCtlPeripheralEnable(TM4C_SD_GPIOB_PERIPH);
-    while (!SysCtlPeripheralReady(TM4C_SD_GPIOB_PERIPH))
+    if (s_bus_initialized)
     {
+        return true;
     }
 
+    SysCtlPeripheralEnable(TM4C_SD_GPIOB_PERIPH);
     SysCtlPeripheralEnable(TM4C_SD_GPIOE_PERIPH);
-    while (!SysCtlPeripheralReady(TM4C_SD_GPIOE_PERIPH))
+    SysCtlPeripheralEnable(TM4C_SD_SSI_PERIPH);
+
+    for (uint32_t timeout = 1000000U; timeout > 0U; --timeout)
     {
+        if (SysCtlPeripheralReady(TM4C_SD_GPIOB_PERIPH) &&
+            SysCtlPeripheralReady(TM4C_SD_GPIOE_PERIPH) &&
+            SysCtlPeripheralReady(TM4C_SD_SSI_PERIPH))
+        {
+            break;
+        }
+
+        if (timeout == 1U)
+        {
+            return false;
+        }
     }
 
     SysCtlPeripheralEnable(TM4C_SD_CS_PERIPH);
-    while (!SysCtlPeripheralReady(TM4C_SD_CS_PERIPH))
+    if (!SysCtlPeripheralReady(TM4C_SD_CS_PERIPH))
     {
-    }
-
-    SysCtlPeripheralEnable(TM4C_SD_SSI_PERIPH);
-    while (!SysCtlPeripheralReady(TM4C_SD_SSI_PERIPH))
-    {
+        return false;
     }
 
     GPIOPinConfigure(GPIO_PB5_SSI1CLK);
@@ -261,6 +272,8 @@ static void SD_BusInit(void)
 
     SD_Select(false);
     SD_SetSpeed(TM4C_SD_INIT_HZ);
+    s_bus_initialized = true;
+    return true;
 }
 
 DSTATUS disk_initialize(BYTE pdrv)
@@ -273,7 +286,16 @@ DSTATUS disk_initialize(BYTE pdrv)
         return STA_NOINIT;
     }
 
-    SD_BusInit();
+    if (s_disk_status == 0U)
+    {
+        return s_disk_status;
+    }
+
+    if (!SD_BusInit())
+    {
+        s_disk_status = STA_NOINIT;
+        return s_disk_status;
+    }
 
     for (uint32_t i = 0; i < 10U; ++i)
     {
@@ -426,7 +448,12 @@ DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void *buff)
     }
 }
 
-bool SD_DriverInit(void)
+bool SD_DriverBusInit(void)
+{
+    return SD_BusInit();
+}
+
+bool SD_DriverCardInit(void)
 {
     return disk_initialize(0U) == 0U;
 }

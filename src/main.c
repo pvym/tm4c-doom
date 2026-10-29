@@ -32,6 +32,15 @@ void InitGraphics(void) {
     // GrContextInit(&g_sContext, &g_sGrRaster16BppDriver);
 }
 
+static void TM4C_StopWithDiagnostic(uint16_t color)
+{
+    LCD_Clear(color);
+    IntMasterDisable();
+    while (1)
+    {
+    }
+}
+
 
 void controlboard_init(void) {
     // The FPU should be enabled because some compilers will use floating-
@@ -132,15 +141,25 @@ int main(void)
     LCD_Init();
     GPIO_InputInit();
 
-    if (!SD_DriverInit() || !SD_DriverMount())
+    LCD_Clear(0x001FU);
+    if (!SD_DriverBusInit())
     {
-        LCD_Clear(0xF800U);
-        IntMasterDisable();
-        while (1)
-        {
-        }
+        TM4C_StopWithDiagnostic(0xF800U);
     }
 
+    LCD_Clear(0xFFE0U);
+    if (!SD_DriverCardInit())
+    {
+        TM4C_StopWithDiagnostic(0xFD20U);
+    }
+
+    LCD_Clear(0x07FFU);
+    if (!SD_DriverMount())
+    {
+        TM4C_StopWithDiagnostic(0xF81FU);
+    }
+
+    LCD_Clear(0x07E0U);
     doomgeneric_Create(6, doom_argv);
 
     while (1)

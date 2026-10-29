@@ -107,7 +107,7 @@
 #define TM4C_SD_MISO_PIN            GPIO_PIN_5
 #define TM4C_SD_CS_PERIPH           SYSCTL_PERIPH_GPIOB
 #define TM4C_SD_CS_PORT             GPIO_PORTB_BASE
-#define TM4C_SD_CS_PIN              GPIO_PIN_0
+#define TM4C_SD_CS_PIN              GPIO_PIN_4
 #define TM4C_SD_INIT_HZ             400000UL
 #define TM4C_SD_TRANSFER_HZ         12000000UL
 

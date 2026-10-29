@@ -27,6 +27,39 @@ static void TM4C_ZeroExternalBss(void)
     }
 }
 
+static void TM4C_StopWithAddress(uint32_t address, uint32_t value);
+
+// Test čtení/zápisu BSS oblasti v SDRAM; při chybě zobrazí adresu (bitově).
+static void TM4C_SdramBssTest(void)
+{
+    volatile uint32_t *start = &__bss_sdram_start__;
+    volatile uint32_t *end = &__bss_sdram_end__;
+    volatile uint32_t *p;
+
+    for (p = start; p < end; ++p)
+    {
+        if (*p != 0U)
+        {
+            TM4C_StopWithAddress((uint32_t)p, *p);
+        }
+    }
+    for (p = start; p < end; ++p)
+    {
+        *p = (uint32_t)p ^ 0xA5A5A5A5UL;
+    }
+    for (p = start; p < end; ++p)
+    {
+        if (*p != ((uint32_t)p ^ 0xA5A5A5A5UL))
+        {
+            TM4C_StopWithAddress((uint32_t)p, *p);
+        }
+    }
+    for (p = start; p < end; ++p)
+    {
+        *p = 0U;
+    }
+}
+
 void InitGraphics(void) {
     // Set graphics library text rendering defaults.
     // GrRaster16BppDriverInit(g_pui32DisplayBuffer);
@@ -58,6 +91,36 @@ static void TM4C_DrawBits(uint8_t value, uint32_t y_start, uint16_t one_color)
                 framebuffer[(y * TM4C_LCD_WIDTH) + x] = color;
             }
         }
+    }
+}
+
+static void TM4C_DrawWord(uint32_t value, uint32_t y_start, uint16_t color)
+{
+    volatile uint16_t *fb = LCD_GetFramebuffer();
+
+    for (uint32_t bit = 0U; bit < 32U; ++bit)
+    {
+        uint16_t c = (value & (0x80000000UL >> bit)) != 0U ? color : 0x0000U;
+
+        for (uint32_t y = y_start; y < (y_start + 30U); ++y)
+        {
+            for (uint32_t x = bit * 10U; x < (bit * 10U) + 8U; ++x)
+            {
+                fb[(y * TM4C_LCD_WIDTH) + x] = c;
+            }
+        }
+    }
+}
+
+// Fialová/oranžová pozadí: horní řádek = adresa, dolní = přečtená hodnota.
+static void TM4C_StopWithAddress(uint32_t address, uint32_t value)
+{
+    LCD_Clear(0x780FU);
+    TM4C_DrawWord(address, 40U, 0xFFFFU);
+    TM4C_DrawWord(value, 120U, 0xFFE0U);
+
+    while (1)
+    {
     }
 }
 
@@ -262,6 +325,8 @@ int main(void)
             TM4C_StopWithWadDiagnostic((uint8_t)wad_result, SD_DriverLastFatFsResult());
         }
     }
+
+    TM4C_SdramBssTest();
 
     LCD_Clear(0x07E0U);
     doomgeneric_Create(6, doom_argv);

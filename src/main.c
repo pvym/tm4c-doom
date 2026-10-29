@@ -148,15 +148,40 @@ int main(void)
     }
 
     LCD_Clear(0xFFE0U);
-    if (!SD_DriverCardInit())
+    switch (SD_DriverCardInit())
     {
-        TM4C_StopWithDiagnostic(0xFD20U);
+        case SD_CARD_INIT_OK:
+            break;
+        case SD_CARD_INIT_BUS_ERROR:
+            TM4C_StopWithDiagnostic(0xF800U);
+            break;
+        case SD_CARD_INIT_CMD0_ERROR:
+            TM4C_StopWithDiagnostic(0x8000U);
+            break;
+        case SD_CARD_INIT_CMD8_ERROR:
+            TM4C_StopWithDiagnostic(0xF81FU);
+            break;
+        case SD_CARD_INIT_ACMD41_ERROR:
+            TM4C_StopWithDiagnostic(0xFD20U);
+            break;
+        case SD_CARD_INIT_CMD1_ERROR:
+            TM4C_StopWithDiagnostic(0xA145U);
+            break;
+        case SD_CARD_INIT_CMD58_ERROR:
+            TM4C_StopWithDiagnostic(0x780FU);
+            break;
+        case SD_CARD_INIT_CMD16_ERROR:
+            TM4C_StopWithDiagnostic(0xFFE0U);
+            break;
+        default:
+            TM4C_StopWithDiagnostic(0xF800U);
+            break;
     }
 
     LCD_Clear(0x07FFU);
     if (!SD_DriverMount())
     {
-        TM4C_StopWithDiagnostic(0xF81FU);
+        TM4C_StopWithDiagnostic(0xFFFFU);
     }
 
     LCD_Clear(0x07E0U);

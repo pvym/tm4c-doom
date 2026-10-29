@@ -39,12 +39,18 @@ Při startu se na displeji zobrazí diagnostická barva aktuální fáze SD. Př
 chybě program zůstane stát na barvě chyby:
 
 - modrá – nastavení SPI sběrnice; červená znamená chybu této fáze
-- žlutá – inicializace SD karty; oranžová znamená, že karta neodpovídá
-- azurová – připojení FAT filesystému; purpurová znamená chybu filesystému
+- žlutá – právě probíhá inicializace SD karty; při chybě:
+  - tmavě červená – CMD0 (karta nepřešla do SPI idle režimu)
+  - purpurová – CMD8 / kontrola R7
+  - oranžová – ACMD41 (SD karta se neinicializovala)
+  - tmavě fialová – CMD58 (čtení OCR)
+  - žlutá – CMD16 (nastavení délky bloku pro starší kartu)
+  - modrošedá – CMD1 (MMC karta se neinicializovala)
+- azurová – připojení FAT filesystému; bílá znamená chybu filesystému
 - zelená – všechny fáze uspěly a spouští se Doom
 
 Úspěšné nastavení SPI ověřuje konfiguraci periferií a pinů; skutečnou
-komunikaci s kartou ověřuje až žlutá fáze inicializace karty.
+komunikaci s kartou ověřuje až inicializace karty.
 
 ## Paměťový layout
 

@@ -36,6 +36,7 @@ static FATFS s_fatfs;
 static DSTATUS s_disk_status = STA_NOINIT;
 static uint8_t s_card_type;
 static bool s_bus_initialized;
+static sd_card_init_result_t s_card_init_result = SD_CARD_INIT_BUS_ERROR;
 
 static void SD_Select(bool selected)
 {
@@ -279,7 +280,9 @@ static bool SD_BusInit(void)
 DSTATUS disk_initialize(BYTE pdrv)
 {
     uint8_t ocr[4];
+    uint8_t response;
     uint32_t timeout;
+    bool ready = false;
 
     if (pdrv != 0U)
     {
@@ -288,11 +291,13 @@ DSTATUS disk_initialize(BYTE pdrv)
 
     if (s_disk_status == 0U)
     {
+        s_card_init_result = SD_CARD_INIT_OK;
         return s_disk_status;
     }
 
     if (!SD_BusInit())
     {
+        s_card_init_result = SD_CARD_INIT_BUS_ERROR;
         s_disk_status = STA_NOINIT;
         return s_disk_status;
     }
@@ -304,47 +309,120 @@ DSTATUS disk_initialize(BYTE pdrv)
 
     s_card_type = 0U;
 
-    if (SD_SendCommand(SD_CMD0, 0U) == 1U)
+    if (SD_SendCommand(SD_CMD0, 0U) != 1U)
     {
-        if (SD_SendCommand(SD_CMD8, 0x1AAU) == 1U)
+        s_card_init_result = SD_CARD_INIT_CMD0_ERROR;
+        SD_Deselect();
+        return STA_NOINIT;
+    }
+
+    response = SD_SendCommand(SD_CMD8, 0x1AAU);
+    if (response == 1U)
+    {
+        for (uint32_t i = 0; i < 4U; ++i)
         {
-            for (uint32_t i = 0; i < 4U; ++i)
+            ocr[i] = SD_SPITransfer(0xFFU);
+        }
+
+        if ((ocr[2] != 0x01U) || (ocr[3] != 0xAAU))
+        {
+            s_card_init_result = SD_CARD_INIT_CMD8_ERROR;
+            SD_Deselect();
+            return STA_NOINIT;
+        }
+
+        s_card_init_result = SD_CARD_INIT_ACMD41_ERROR;
+        timeout = 100000U;
+        while (timeout > 0U)
+        {
+            --timeout;
+            if (SD_SendCommand(0x80U | SD_ACMD41, 1UL << 30) == 0U)
             {
-                ocr[i] = SD_SPITransfer(0xFFU);
+                ready = true;
+                break;
+            }
+        }
+
+        if (!ready)
+        {
+            SD_Deselect();
+            return STA_NOINIT;
+        }
+
+        s_card_init_result = SD_CARD_INIT_CMD58_ERROR;
+        if (SD_SendCommand(SD_CMD58, 0U) != 0U)
+        {
+            SD_Deselect();
+            return STA_NOINIT;
+        }
+
+        for (uint32_t i = 0; i < 4U; ++i)
+        {
+            ocr[i] = SD_SPITransfer(0xFFU);
+        }
+        s_card_type = CT_SD2 | ((ocr[0] & 0x40U) ? CT_BLOCK : 0U);
+    }
+    else if (response == 0x05U)
+    {
+        response = SD_SendCommand(0x80U | SD_ACMD41, 0U);
+        if (response <= 1U)
+        {
+            s_card_type = CT_SD1;
+            s_card_init_result = SD_CARD_INIT_ACMD41_ERROR;
+            timeout = 100000U;
+            ready = false;
+            while (timeout > 0U)
+            {
+                --timeout;
+                if (SD_SendCommand(0x80U | SD_ACMD41, 0U) == 0U)
+                {
+                    ready = true;
+                    break;
+                }
             }
 
-            if ((ocr[2] == 0x01U) && (ocr[3] == 0xAAU))
+            if (!ready)
             {
-                timeout = 100000U;
-                while ((timeout-- > 0U) && (SD_SendCommand(0x80U | SD_ACMD41, 1UL << 30) != 0U))
-                {
-                }
-
-                if ((timeout > 0U) && (SD_SendCommand(SD_CMD58, 0U) == 0U))
-                {
-                    for (uint32_t i = 0; i < 4U; ++i)
-                    {
-                        ocr[i] = SD_SPITransfer(0xFFU);
-                    }
-                    s_card_type = CT_SD2 | ((ocr[0] & 0x40U) ? CT_BLOCK : 0U);
-                }
+                SD_Deselect();
+                return STA_NOINIT;
             }
         }
         else
         {
-            uint8_t init_command = (SD_SendCommand(0x80U | SD_ACMD41, 0U) <= 1U) ? (0x80U | SD_ACMD41) : SD_CMD1;
-            s_card_type = (init_command == (0x80U | SD_ACMD41)) ? CT_SD1 : CT_MMC;
-
+            s_card_type = CT_MMC;
+            s_card_init_result = SD_CARD_INIT_CMD1_ERROR;
             timeout = 100000U;
-            while ((timeout-- > 0U) && (SD_SendCommand(init_command, 0U) != 0U))
+            ready = false;
+            while (timeout > 0U)
             {
+                --timeout;
+                if (SD_SendCommand(SD_CMD1, 0U) == 0U)
+                {
+                    ready = true;
+                    break;
+                }
             }
 
-            if ((timeout == 0U) || (SD_SendCommand(SD_CMD16, 512U) != 0U))
+            if (!ready)
             {
-                s_card_type = 0U;
+                SD_Deselect();
+                return STA_NOINIT;
             }
         }
+
+        s_card_init_result = SD_CARD_INIT_CMD16_ERROR;
+        if (SD_SendCommand(SD_CMD16, 512U) != 0U)
+        {
+            s_card_type = 0U;
+            SD_Deselect();
+            return STA_NOINIT;
+        }
+    }
+    else
+    {
+        s_card_init_result = SD_CARD_INIT_CMD8_ERROR;
+        SD_Deselect();
+        return STA_NOINIT;
     }
 
     SD_Deselect();
@@ -352,10 +430,12 @@ DSTATUS disk_initialize(BYTE pdrv)
     if (s_card_type != 0U)
     {
         s_disk_status = 0U;
+        s_card_init_result = SD_CARD_INIT_OK;
         SD_SetSpeed(TM4C_SD_TRANSFER_HZ);
     }
     else
     {
+        s_card_init_result = SD_CARD_INIT_CMD8_ERROR;
         s_disk_status = STA_NOINIT;
     }
 
@@ -453,9 +533,10 @@ bool SD_DriverBusInit(void)
     return SD_BusInit();
 }
 
-bool SD_DriverCardInit(void)
+sd_card_init_result_t SD_DriverCardInit(void)
 {
-    return disk_initialize(0U) == 0U;
+    (void)disk_initialize(0U);
+    return s_card_init_result;
 }
 
 bool SD_DriverMount(void)

@@ -141,6 +141,64 @@ static void TM4C_SdramRetentionTest(void)
     }
 }
 
+// Náhodný přístup do zone: dvojité čtení téhož slova + bajtové/půlslovní zápisy.
+// Při chybě: horní řádek = adresa, dolní = hodnota (1. čtení), prostřední = 2. čtení.
+static void TM4C_SdramRandomTest(void)
+{
+    const uint32_t base = TM4C_DOOM_ZONE_HEAP_ADDR;
+    const uint32_t words = TM4C_DOOM_ZONE_HEAP_SIZE / 4U;
+    volatile uint32_t *mem = (volatile uint32_t *)base;
+    uint32_t lfsr = 0xACE1U;
+    uint32_t i;
+
+    for (i = 0U; i < words; ++i)
+    {
+        mem[i] = (uint32_t)&mem[i] ^ 0x3C3C5A5AUL;
+    }
+
+    for (i = 0U; i < 2000000UL; ++i)
+    {
+        uint32_t idx;
+        uint32_t expected;
+        uint32_t a;
+        uint32_t b;
+
+        lfsr = (lfsr >> 1) ^ (uint32_t)(-(int32_t)(lfsr & 1U) & 0xD0000001UL);
+        idx = lfsr % words;
+        expected = (uint32_t)&mem[idx] ^ 0x3C3C5A5AUL;
+
+        a = mem[idx];
+        b = mem[idx];
+        if ((a != expected) || (b != expected))
+        {
+            TM4C_DrawWord(b, 200U, 0x07FFU);
+            TM4C_StopWithAddress((uint32_t)&mem[idx], a ^ expected);
+        }
+
+        if ((i & 3U) == 0U)
+        {
+            volatile uint8_t *bp = (volatile uint8_t *)&mem[idx];
+
+            bp[i & 3U] = bp[i & 3U];
+            bp[1] = bp[1];
+            if (mem[idx] != expected)
+            {
+                TM4C_StopWithAddress((uint32_t)&mem[idx], mem[idx] ^ expected);
+            }
+            ((volatile uint16_t *)&mem[idx])[1] = (uint16_t)(expected >> 16);
+            if (mem[idx] != expected)
+            {
+                TM4C_StopWithAddress((uint32_t)&mem[idx], mem[idx] ^ expected);
+            }
+        }
+    }
+
+    for (i = 0U; i < words; ++i)
+    {
+        mem[i] = 0U;
+    }
+}
+
 void InitGraphics(void) {
     // Set graphics library text rendering defaults.
     // GrRaster16BppDriverInit(g_pui32DisplayBuffer);
@@ -411,6 +469,7 @@ int main(void)
     TM4C_SdramReadStress();
     TM4C_SdramAliasTest();
     TM4C_SdramRetentionTest();
+    TM4C_SdramRandomTest();
 
     LCD_Clear(0x07E0U);
     doomgeneric_Create(6, doom_argv);

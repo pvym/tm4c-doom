@@ -77,6 +77,33 @@ static void TM4C_SdramReadStress(void)
     }
 }
 
+// Test aliasingu SDRAM: po 1 MiB zapíše unikátní hodnotu a ověří, že se nic nezrcadlí.
+static void TM4C_SdramAliasTest(void)
+{
+    const uint32_t step = 0x00100000UL;
+    const uint32_t off = 0x00080000UL;
+    uint32_t k;
+
+    for (k = 0U; k < 32U; ++k)
+    {
+        *(volatile uint32_t *)(TM4C_SDRAM_BASE + (k * step) + off) = 0xC0DE0000UL + k;
+    }
+    for (k = 0U; k < 32U; ++k)
+    {
+        uint32_t addr = TM4C_SDRAM_BASE + (k * step) + off;
+        uint32_t v = *(volatile uint32_t *)addr;
+
+        if (v != (0xC0DE0000UL + k))
+        {
+            TM4C_StopWithAddress(addr, v);
+        }
+    }
+    for (k = 0U; k < 32U; ++k)
+    {
+        *(volatile uint32_t *)(TM4C_SDRAM_BASE + (k * step) + off) = 0U;
+    }
+}
+
 void InitGraphics(void) {
     // Set graphics library text rendering defaults.
     // GrRaster16BppDriverInit(g_pui32DisplayBuffer);
@@ -345,6 +372,7 @@ int main(void)
 
     TM4C_SdramBssTest();
     TM4C_SdramReadStress();
+    TM4C_SdramAliasTest();
 
     LCD_Clear(0x07E0U);
     doomgeneric_Create(6, doom_argv);

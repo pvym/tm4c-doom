@@ -41,6 +41,37 @@ static void TM4C_StopWithDiagnostic(uint16_t color)
     }
 }
 
+static void TM4C_DrawBits(uint8_t value, uint32_t y_start, uint16_t one_color)
+{
+    volatile uint16_t *framebuffer = LCD_GetFramebuffer();
+
+    for (uint32_t bit = 0U; bit < 8U; ++bit)
+    {
+        uint16_t color = (value & (0x80U >> bit)) != 0U ? one_color : 0x0000U;
+        uint32_t x_start = 40U + (bit * 50U);
+
+        for (uint32_t y = y_start; y < (y_start + 60U); ++y)
+        {
+            for (uint32_t x = x_start; x < (x_start + 40U); ++x)
+            {
+                framebuffer[(y * TM4C_LCD_WIDTH) + x] = color;
+            }
+        }
+    }
+}
+
+static void TM4C_StopWithWadDiagnostic(uint8_t stage, uint8_t fresult)
+{
+    LCD_Clear(0x4208U);
+    TM4C_DrawBits(stage, 40U, 0xFFE0U);
+    TM4C_DrawBits(fresult, 180U, 0xFFFFU);
+
+    IntMasterDisable();
+    while (1)
+    {
+    }
+}
+
 static void TM4C_StopWithCmd0Diagnostic(uint8_t response, bool wait_ready_timed_out)
 {
     volatile uint16_t *framebuffer = LCD_GetFramebuffer();
@@ -74,7 +105,6 @@ static void TM4C_StopWithCmd0Diagnostic(uint8_t response, bool wait_ready_timed_
     {
     }
 }
-
 
 void controlboard_init(void) {
     // The FPU should be enabled because some compilers will use floating-
@@ -217,6 +247,16 @@ int main(void)
     if (!SD_DriverMount())
     {
         TM4C_StopWithDiagnostic(0xFFFFU);
+    }
+
+    LCD_Clear(0x7BEFU);
+    {
+        sd_wad_check_result_t wad_result = SD_DriverWadCheck(TM4C_WAD_PATH);
+
+        if (wad_result != SD_WAD_CHECK_OK)
+        {
+            TM4C_StopWithWadDiagnostic((uint8_t)wad_result, SD_DriverLastFatFsResult());
+        }
     }
 
     LCD_Clear(0x07E0U);

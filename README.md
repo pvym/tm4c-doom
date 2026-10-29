@@ -47,7 +47,14 @@ chybě program zůstane stát na barvě chyby:
   - žlutá – CMD16 (nastavení délky bloku pro starší kartu)
   - modrošedá – CMD1 (MMC karta se neinicializovala)
 - azurová – připojení FAT filesystému; bílá znamená chybu filesystému
-- zelená – všechny fáze uspěly a spouští se Doom
+- šedá – kontrola `0:/doom1.wad` (otevření, hlavička, načtení do SDRAM cache); při chybě zůstane
+  tmavě šedé pozadí se dvěma řádky bitových polí (světlé = 1, zleva `b7`..`b0`):
+  horní (žlutá) je fáze, dolní (bílá) kód `FRESULT` z FatFs:
+  - 1 – soubor nejde otevřít (`FRESULT` 4 = soubor nenalezen, 13 = není FAT)
+  - 2 – soubor je příliš malý, 3 – větší než 8 MiB cache
+  - 4 – chyba čtení hlavičky, 5 – hlavička není `IWAD`/`PWAD`
+  - 6 – chyba čtení do cache, 7 – obsah cache nesedí s hlavičkou
+- zelená – všechny fáze uspěly (WAD načten do SDRAM) a spouští se Doom
 
 Úspěšné nastavení SPI ověřuje konfiguraci periferií a pinů; skutečnou
 komunikaci s kartou ověřuje až inicializace karty.

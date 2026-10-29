@@ -37,6 +37,7 @@ static DSTATUS s_disk_status = STA_NOINIT;
 static uint8_t s_card_type;
 static bool s_bus_initialized;
 static sd_card_init_result_t s_card_init_result = SD_CARD_INIT_BUS_ERROR;
+static FRESULT s_last_fresult = FR_OK;
 static uint8_t s_cmd0_response = 0xFFU;
 static bool s_cmd0_wait_ready_timed_out;
 static bool s_last_command_wait_ready_timed_out;
@@ -563,7 +564,80 @@ bool SD_DriverCmd0WaitReadyTimedOut(void)
 
 bool SD_DriverMount(void)
 {
-    return f_mount(&s_fatfs, "0:", 1U) == FR_OK;
+    s_last_fresult = f_mount(&s_fatfs, "0:", 1U);
+    return s_last_fresult == FR_OK;
+}
+
+uint8_t SD_DriverLastFatFsResult(void)
+{
+    return (uint8_t)s_last_fresult;
+}
+
+sd_wad_check_result_t SD_DriverWadCheck(const char *path)
+{
+    FIL file;
+    uint8_t header[12];
+    UINT bytes_read = 0U;
+    volatile uint8_t *cache = (volatile uint8_t *)TM4C_WAD_CACHE_ADDR;
+    FSIZE_t size;
+    FSIZE_t offset;
+    sd_wad_check_result_t result = SD_WAD_CHECK_OK;
+
+    s_last_fresult = f_open(&file, path, FA_READ | FA_OPEN_EXISTING);
+    if (s_last_fresult != FR_OK)
+    {
+        return SD_WAD_CHECK_OPEN_ERROR;
+    }
+
+    size = f_size(&file);
+    if (size < sizeof(header))
+    {
+        result = SD_WAD_CHECK_TOO_SMALL;
+    }
+    else if (size > TM4C_WAD_CACHE_SIZE)
+    {
+        result = SD_WAD_CHECK_TOO_BIG;
+    }
+    else
+    {
+        s_last_fresult = f_read(&file, header, sizeof(header), &bytes_read);
+        if ((s_last_fresult != FR_OK) || (bytes_read != sizeof(header)))
+        {
+            result = SD_WAD_CHECK_HEADER_READ_ERROR;
+        }
+        else if ((header[1] != 'W') || (header[2] != 'A') || (header[3] != 'D') ||
+                 ((header[0] != 'I') && (header[0] != 'P')))
+        {
+            result = SD_WAD_CHECK_BAD_MAGIC;
+        }
+    }
+
+    if (result == SD_WAD_CHECK_OK)
+    {
+        s_last_fresult = f_lseek(&file, 0U);
+        for (offset = 0U; (s_last_fresult == FR_OK) && (offset < size); offset += bytes_read)
+        {
+            UINT chunk = ((size - offset) > 4096U) ? 4096U : (UINT)(size - offset);
+
+            s_last_fresult = f_read(&file, (void *)(cache + offset), chunk, &bytes_read);
+            if ((s_last_fresult == FR_OK) && (bytes_read != chunk))
+            {
+                s_last_fresult = FR_INT_ERR;
+            }
+        }
+
+        if (s_last_fresult != FR_OK)
+        {
+            result = SD_WAD_CHECK_CACHE_READ_ERROR;
+        }
+        else if ((cache[1] != 'W') || (cache[2] != 'A') || (cache[3] != 'D'))
+        {
+            result = SD_WAD_CHECK_CACHE_VERIFY_ERROR;
+        }
+    }
+
+    (void)f_close(&file);
+    return result;
 }
 
 uintptr_t SD_DriverWadCacheBase(void)

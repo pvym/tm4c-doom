@@ -60,6 +60,23 @@ static void TM4C_SdramBssTest(void)
     }
 }
 
+// Zátěžové čtení SDRAM vzorem "načti ukazatel z literálu, pak hodnotu"; hodnota má být 0.
+static void TM4C_SdramReadStress(void)
+{
+    static volatile uint32_t *const probe = (volatile uint32_t *)0x1005085CUL;
+    static volatile uint32_t *const other = (volatile uint32_t *)0x1005065CUL;
+
+    for (uint32_t i = 0U; i < 2000000UL; ++i)
+    {
+        uint32_t a = *probe;
+        uint32_t b = *other;
+        if ((a != 0U) || (b != 0U))
+        {
+            TM4C_StopWithAddress(a, b);
+        }
+    }
+}
+
 void InitGraphics(void) {
     // Set graphics library text rendering defaults.
     // GrRaster16BppDriverInit(g_pui32DisplayBuffer);
@@ -327,6 +344,7 @@ int main(void)
     }
 
     TM4C_SdramBssTest();
+    TM4C_SdramReadStress();
 
     LCD_Clear(0x07E0U);
     doomgeneric_Create(6, doom_argv);

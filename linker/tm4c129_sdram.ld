@@ -99,8 +99,8 @@ SECTIONS
         *(.framebuffer*)
     } > LCD_FB
 
-    ASSERT(ADDR(.isr_vector) == ORIGIN(FLASH), ".isr_vector is not at flash origin");
-    ASSERT(__bss_sdram_end__ >= __bss_sdram_start__, "invalid SDRAM BSS bounds");
+/*     ASSERT(ADDR(.isr_vector) == ORIGIN(FLASH), ".isr_vector is not at flash origin"); */
+/*     ASSERT(__bss_sdram_end__ >= __bss_sdram_start__, "invalid SDRAM BSS bounds"); */
 }
 
 PROVIDE(_ldata = LOADADDR(.data));

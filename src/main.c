@@ -185,10 +185,10 @@ int main(void)
     }
 
     LCD_Clear(0x07E0U);
-    doomgeneric_Create(6, doom_argv);
+    // doomgeneric_Create(6, doom_argv);
 
     while (1)
     {
-        doomgeneric_Tick();
+        // doomgeneric_Tick();
     }
 }

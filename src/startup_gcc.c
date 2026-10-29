@@ -216,12 +216,15 @@ ResetISR(void)
     main();
 }
 
-static void
+static void __attribute__((naked))
 NmiSR(void)
 {
-    while (1)
-    {
-    }
+    __asm volatile(
+        "tst lr, #4\n"
+        "ite eq\n"
+        "mrseq r0, msp\n"
+        "mrsne r0, psp\n"
+        "b FaultReport\n");
 }
 
 extern volatile uint16_t *LCD_GetFramebuffer(void);

@@ -26,8 +26,8 @@
 #define TM4C_LCD_FRAMEBUFFER2_ADDR 0x600C0000UL
 #define TM4C_LCD_FRAMEBUFFER_SIZE   (TM4C_LCD_WIDTH * TM4C_LCD_HEIGHT * sizeof(uint16_t))
 /* Prodleva po každém řádku při kopii do framebufferu (smyčka; ladit podle podtečení). */
-#define TM4C_LCD_COPY_PAUSE         6000U
-#define TM4C_LCD_PIXEL_CLOCK_HZ     5000000UL
+#define TM4C_LCD_COPY_PAUSE         1500U
+#define TM4C_LCD_PIXEL_CLOCK_HZ     8000000UL
 #define TM4C_LCD_RASTER_FLAGS       (RASTER_TIMING_ACTIVE_LOW_PIXCLK | \
                                      RASTER_TIMING_SYNCS_ON_RISING_PIXCLK | \
                                      RASTER_TIMING_ACTIVE_LOW_HSYNC | \

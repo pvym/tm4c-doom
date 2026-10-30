@@ -253,6 +253,7 @@ volatile uint32_t g_lcd_synclost_count;
 volatile uint32_t g_lcd_frame_count;
 static volatile uintptr_t s_front_addr = TM4C_LCD_FRAMEBUFFER_ADDR;
 static volatile uintptr_t s_pending_addr = 0U;
+static volatile uint32_t s_settle_frames = 0U;
 
 void LCDIntHandler(void)
 {
@@ -261,12 +262,18 @@ void LCDIntHandler(void)
     LCDIntClear(LCD0_BASE, status);
 
     // Adresu framebufferu měníme až po dokončení snímku, aby nevznikal tearing.
-    if (((status & LCD_INT_RASTER_FRAME_DONE) != 0U) && (s_pending_addr != 0U))
+    if (((status & LCD_INT_RASTER_FRAME_DONE) != 0U) && (s_settle_frames != 0U))
+    {
+        --s_settle_frames;
+    }
+    else if (((status & LCD_INT_RASTER_FRAME_DONE) != 0U) && (s_pending_addr != 0U))
     {
         LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)s_pending_addr,
                                 TM4C_LCD_FRAMEBUFFER_SIZE);
         s_front_addr = s_pending_addr;
         s_pending_addr = 0U;
+        // DMA má další snímek často už předchystaný ze staré adresy.
+        s_settle_frames = 1U;
     }
 
     if ((status & LCD_INT_UNDERFLOW) != 0U)
@@ -306,14 +313,15 @@ void LCD_SwapBuffers(void)
     uintptr_t back = (uintptr_t)LCD_GetBackBuffer();
 
     s_pending_addr = back;
-    while ((s_pending_addr != 0U) && (--guard != 0U))
+    while (((s_pending_addr != 0U) || (s_settle_frames != 0U)) && (--guard != 0U))
     {
     }
 
-    if (s_pending_addr != 0U)
+    if ((s_pending_addr != 0U) || (s_settle_frames != 0U))
     {
         // Přerušení snímku nepřišlo; přepneme přímo.
         s_pending_addr = 0U;
+        s_settle_frames = 0U;
         LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)back, TM4C_LCD_FRAMEBUFFER_SIZE);
         s_front_addr = back;
     }

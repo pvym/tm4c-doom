@@ -1,5 +1,8 @@
 #include "loading_screen.h"
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "config.h"
 #include "lcd_init.h"
 

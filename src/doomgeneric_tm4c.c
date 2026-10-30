@@ -53,6 +53,14 @@ void SysTick_Handler(void)
 void DG_Init(void)
 {
     LCD_Clear(0U);
+    {
+        volatile uint16_t *back = LCD_GetBackBuffer();
+
+        for (uint32_t i = 0; i < (TM4C_LCD_WIDTH * TM4C_LCD_HEIGHT); ++i)
+        {
+            back[i] = 0U;
+        }
+    }
     s_ticks_ms = 0U;
     SysTickPeriodSet(s_system_clock_hz / 1000U);
     SysTickIntEnable();
@@ -62,7 +70,7 @@ void DG_Init(void)
 
 void DG_DrawFrame(void)
 {
-    volatile uint16_t *dst = LCD_GetFramebuffer();
+    volatile uint16_t *dst = LCD_GetBackBuffer();
     const uint8_t *src = (const uint8_t *)DG_ScreenBuffer;
 
     UpdatePaletteCache();
@@ -73,6 +81,8 @@ void DG_DrawFrame(void)
     {
         dst[i] = s_palette565[src[i]];
     }
+
+    LCD_SwapBuffers();
 }
 
 void DG_SleepMs(uint32_t ms)

@@ -248,15 +248,55 @@ static void PanelInitST7796SRGB(uint32_t system_clock_hz)
     PanelBacklightSet(true);
 }
 
+static volatile uintptr_t s_front_addr = TM4C_LCD_FRAMEBUFFER_ADDR;
+static volatile uintptr_t s_pending_addr = 0U;
+
 void LCDIntHandler(void)
 {
     uint32_t status = LCDIntStatus(LCD0_BASE, true);
 
     LCDIntClear(LCD0_BASE, status);
 
+    // Adresu framebufferu měníme až po dokončení snímku, aby nevznikal tearing.
+    if (((status & LCD_INT_RASTER_FRAME_DONE) != 0U) && (s_pending_addr != 0U))
+    {
+        LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)s_pending_addr,
+                                TM4C_LCD_FRAMEBUFFER_SIZE);
+        s_front_addr = s_pending_addr;
+        s_pending_addr = 0U;
+    }
+
     if ((status & LCD_INT_UNDERFLOW) != 0U)
     {
         LCDRasterEnable(LCD0_BASE);
+    }
+}
+
+volatile uint16_t *LCD_GetBackBuffer(void)
+{
+    uintptr_t back = (s_front_addr == TM4C_LCD_FRAMEBUFFER_ADDR) ?
+                     TM4C_LCD_FRAMEBUFFER2_ADDR : TM4C_LCD_FRAMEBUFFER_ADDR;
+
+    return (volatile uint16_t *)back;
+}
+
+// Zobrazí back buffer od příštího snímku a počká na přepnutí.
+void LCD_SwapBuffers(void)
+{
+    uint32_t guard = 3000000U;
+    uintptr_t back = (uintptr_t)LCD_GetBackBuffer();
+
+    s_pending_addr = back;
+    while ((s_pending_addr != 0U) && (--guard != 0U))
+    {
+    }
+
+    if (s_pending_addr != 0U)
+    {
+        // Přerušení snímku nepřišlo; přepneme přímo.
+        s_pending_addr = 0U;
+        LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)back, TM4C_LCD_FRAMEBUFFER_SIZE);
+        s_front_addr = back;
     }
 }
 

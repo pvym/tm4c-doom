@@ -87,4 +87,7 @@ void LEDBacklightON(void);
 void LEDBacklightOFF(void);
 
 
+extern volatile uint16_t *LCD_GetBackBuffer(void);
+extern void LCD_SwapBuffers(void);
+
 #endif

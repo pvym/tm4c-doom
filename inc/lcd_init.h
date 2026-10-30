@@ -44,15 +44,15 @@ typedef struct
 tRasterDisplayInfo;
 
 // orig
-#define RASTER_WIDTH 480
-#define RASTER_HEIGHT 320
+#define RASTER_WIDTH 320
+#define RASTER_HEIGHT 480
 
 #define LCD_FRAME_BUFFER_ADDR 0x60000000
 
 
 // fyzicke rozmery displeje pri jeho standarni orientaci
-#define LCD_VERTICAL_MAX 320
-#define LCD_HORIZONTAL_MAX 480
+#define LCD_VERTICAL_MAX 480
+#define LCD_HORIZONTAL_MAX 320
 
 // pro 50Hz pri 10MHz (na 60Hz lze prejit zmenou pixel_clock na 12MHz pri stejnem nastaveni)
 #define LCD_PIXEL_CLOCK		10000000		// 10MHz

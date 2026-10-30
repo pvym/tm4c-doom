@@ -473,6 +473,10 @@ int main(void)
     TM4C_SdramRandomTest();
 
     LCD_Clear(0x07E0U);
+#ifdef TM4C_LCD_OFF_FOR_DOOM
+    // Ladění: bez LCD DMA, aby se vyloučil souběh s CPU na EPI.
+    LCDRasterDisable(LCD0_BASE);
+#endif
     doomgeneric_Create(6, doom_argv);
 
     while (1)

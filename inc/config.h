@@ -9,6 +9,8 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/ssi.h"
 
+/* Ladění: vypne LCD raster/DMA před startem Doomu (zakomentovat pro normální běh). */
+#define TM4C_LCD_OFF_FOR_DOOM       1
 #define TM4C_SYSTEM_CLOCK_HZ        120000000UL
 
 #define TM4C_LCD_WIDTH              320U

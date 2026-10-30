@@ -79,7 +79,8 @@ def main():
         r, g, b = pal[3 * i: 3 * i + 3]
         pal565.append(((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3))
 
-    px = list(img.getdata())
+    get_pixels = getattr(img, "get_flattened_data", None) or img.getdata
+    px = list(get_pixels())
     rle = []
     i = 0
     while i < len(px):

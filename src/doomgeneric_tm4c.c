@@ -68,6 +68,11 @@ void DG_Init(void)
     IntMasterEnable();
 }
 
+volatile uint32_t g_doom_frames;
+volatile uint32_t g_doom_fps;
+static uint32_t s_fps_last_ms;
+static uint32_t s_fps_last_frames;
+
 void DG_DrawFrame(void)
 {
     volatile uint16_t *dst = LCD_GetBackBuffer();
@@ -83,6 +88,14 @@ void DG_DrawFrame(void)
     }
 
     LCD_SwapBuffers();
+
+    ++g_doom_frames;
+    if ((s_ticks_ms - s_fps_last_ms) >= 1000U)
+    {
+        g_doom_fps = ((g_doom_frames - s_fps_last_frames) * 1000U) / (s_ticks_ms - s_fps_last_ms);
+        s_fps_last_ms = s_ticks_ms;
+        s_fps_last_frames = g_doom_frames;
+    }
 }
 
 void DG_SleepMs(uint32_t ms)

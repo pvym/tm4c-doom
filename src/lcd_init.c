@@ -235,7 +235,7 @@ static void PanelInitST7796SRGB(uint32_t system_clock_hz)
     PanelWriteData((uint8_t)g_tm4cRasterTiming.ui16HBackPorch);
 
     PanelWriteCommand(ST7796S_WRCABC);
-    PanelWriteData(0x80U);
+    PanelWriteData(0x82U);
 
     PanelWriteCommand(ST7796S_CSCON);
     PanelWriteData(0x3CU);
@@ -253,7 +253,6 @@ volatile uint32_t g_lcd_synclost_count;
 volatile uint32_t g_lcd_frame_count;
 static volatile uintptr_t s_front_addr = TM4C_LCD_FRAMEBUFFER_ADDR;
 static volatile uintptr_t s_pending_addr = 0U;
-static volatile uint32_t s_settle_frames = 0U;
 
 void LCDIntHandler(void)
 {
@@ -262,18 +261,12 @@ void LCDIntHandler(void)
     LCDIntClear(LCD0_BASE, status);
 
     // Adresu framebufferu měníme až po dokončení snímku, aby nevznikal tearing.
-    if (((status & LCD_INT_RASTER_FRAME_DONE) != 0U) && (s_settle_frames != 0U))
-    {
-        --s_settle_frames;
-    }
-    else if (((status & LCD_INT_EOF0) != 0U) && (s_pending_addr != 0U))
+    if (((status & LCD_INT_RASTER_FRAME_DONE) != 0U) && (s_pending_addr != 0U))
     {
         LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)s_pending_addr,
                                 TM4C_LCD_FRAMEBUFFER_SIZE);
         s_front_addr = s_pending_addr;
         s_pending_addr = 0U;
-        // DMA má další snímek často už předchystaný ze staré adresy.
-        s_settle_frames = 1U;
     }
 
     if ((status & LCD_INT_UNDERFLOW) != 0U)
@@ -313,15 +306,14 @@ void LCD_SwapBuffers(void)
     uintptr_t back = (uintptr_t)LCD_GetBackBuffer();
 
     s_pending_addr = back;
-    while (((s_pending_addr != 0U) || (s_settle_frames != 0U)) && (--guard != 0U))
+    while ((s_pending_addr != 0U) && (--guard != 0U))
     {
     }
 
-    if ((s_pending_addr != 0U) || (s_settle_frames != 0U))
+    if (s_pending_addr != 0U)
     {
         // Přerušení snímku nepřišlo; přepneme přímo.
         s_pending_addr = 0U;
-        s_settle_frames = 0U;
         LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)back, TM4C_LCD_FRAMEBUFFER_SIZE);
         s_front_addr = back;
     }
@@ -382,7 +374,7 @@ void __attribute__((weak)) TM4C_LCD_ControllerInit(void)
                TM4C_SYSTEM_CLOCK_HZ);
     LCDRasterTimingSet(LCD0_BASE, &g_tm4cRasterTiming);
     LCDDMAConfigSet(LCD0_BASE,
-                    LCD_DMA_BURST_4 |
+                    LCD_DMA_BURST_16 |
                     LCD_DMA_FIFORDY_64_WORDS |
                     LCD_DMA_BYTE_ORDER_0123);
     LCDRasterFrameBufferSet(LCD0_BASE,
@@ -563,7 +555,7 @@ void InitST7796S_RGB(uint32_t ui32SysClock) {
     WriteDataSPI(((g_sPowertip480x320x60Hz.sTiming.ui16HBackPorch) & 0xFF));
 
     WriteCommandSPI(ST7796S_WRCABC);
-    WriteDataSPI(0x80);
+    WriteDataSPI(0x82);
 
     // disable commands 2
     WriteCommandSPI(ST7796S_CSCON);		// Command Set Control

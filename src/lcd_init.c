@@ -217,14 +217,14 @@ static void PanelInitST7796SRGB(uint32_t system_clock_hz)
     PanelWriteCommand(ST7796S_MADCTL);
     PanelWriteData(TM4C_PANEL_MADCTL);
     PanelWriteCommand(ST7796S_COLMOD);
-    PanelWriteData(0x05U);
+    PanelWriteData(0x55U);
     PanelWriteCommand(ST7796S_DIC);
     PanelWriteData(0x01U);
     PanelWriteCommand(ST7796S_IFMODE);
     PanelWriteData(0x00U);
 
     PanelWriteCommand(ST7796S_DFC);
-    PanelWriteData(0x00U);
+    PanelWriteData(0x20U);
     PanelWriteData(0x22U);
     PanelWriteData(0x3BU);
 
@@ -530,7 +530,7 @@ void InitST7796S_RGB(uint32_t ui32SysClock) {
     WriteDataSPI(TM4C_PANEL_MADCTL);
 
     WriteCommandSPI(ST7796S_COLMOD);
-    WriteDataSPI(0x05);
+    WriteDataSPI(0x55);
 
     WriteCommandSPI(ST7796S_DIC);		// Display Inversion Control
     WriteDataSPI(0x01);
@@ -542,7 +542,7 @@ void InitST7796S_RGB(uint32_t ui32SysClock) {
     //FIXME zkusit zmenit nastaveni
     // minimalne prvni parametr 30 by asi nemel 30 ale 60 - t.j. 4.bit by mel byt v nule
     WriteCommandSPI(ST7796S_DFC);		// Display Function Control
-    WriteDataSPI(0x00);
+    WriteDataSPI(0x20);		// RGB interface + DE mode
     WriteDataSPI(0x22);		//0x22	// SS=1  ISC=02
     WriteDataSPI(0x3B);		// 3B- 59 - 60*8 480
 

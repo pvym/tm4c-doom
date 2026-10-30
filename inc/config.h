@@ -22,7 +22,7 @@
 /* Druhý framebuffer (double buffering); musí ležet za .bss_sdram (konec ~0x6008AAC4). */
 #define TM4C_LCD_FRAMEBUFFER2_ADDR 0x600C0000UL
 #define TM4C_LCD_FRAMEBUFFER_SIZE   (TM4C_LCD_WIDTH * TM4C_LCD_HEIGHT * sizeof(uint16_t))
-#define TM4C_LCD_PIXEL_CLOCK_HZ     10000000UL
+#define TM4C_LCD_PIXEL_CLOCK_HZ     6000000UL
 #define TM4C_LCD_RASTER_FLAGS       (RASTER_TIMING_ACTIVE_LOW_PIXCLK | \
                                      RASTER_TIMING_SYNCS_ON_RISING_PIXCLK | \
                                      RASTER_TIMING_ACTIVE_LOW_HSYNC | \

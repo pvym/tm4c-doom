@@ -471,8 +471,8 @@ void InitSDRAM(void) {
 		//
 		// Yes. Set the EPI clock to half the system clock.
 		//
-		// Ladění stability: EPI = SysClk/16 (7,5 MHz, experiment) místo SysClk/2.
-		EPIDividerSet(EPI0_BASE, 8);
+		// EPI = SysClk/2 (60 MHz).
+		EPIDividerSet(EPI0_BASE, 1);
 	}
 	else {
 		//
@@ -518,9 +518,9 @@ void InitSDRAM(void) {
 	// Set the SDRAM size to 64MB with a refresh interval of 1024 clock ticks.
 	//
 	if (g_ui32SysClock > 60000000) {
-		ui32Freq = EPI_SDRAM_CORE_FREQ_0_15;
+		ui32Freq = EPI_SDRAM_CORE_FREQ_50_100;
 	}
-	EPIConfigSDRAMSet(EPI0_BASE, (ui32Freq | EPI_SDRAM_FULL_POWER | EPI_SDRAM_SIZE_256MBIT), 50);
+	EPIConfigSDRAMSet(EPI0_BASE, (ui32Freq | EPI_SDRAM_FULL_POWER | EPI_SDRAM_SIZE_256MBIT), 400);
 	// 256Mbit SDRAM: 8192 řádků / 64 ms => refresh <= 7.8 us; 400 taktů při 60 MHz = 6.7 us.
 
 

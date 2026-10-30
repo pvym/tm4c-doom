@@ -81,29 +81,28 @@ void DG_DrawFrame(void)
 
     UpdatePaletteCache();
 
-    /* Rotate Doom 90 degrees clockwise and center it in the 480x320 panel. */
+    /* Center Doom's 320x200 frame in the landscape 480x320 framebuffer. */
     {
         volatile uint32_t *dst32 = (volatile uint32_t *)dst;
         const uint16_t *pal = s_palette565;
-        const uint32_t x_offset = (TM4C_LCD_WIDTH - TM4C_DOOM_HEIGHT) / 2U;
+        const uint32_t x_offset = (TM4C_LCD_WIDTH - TM4C_DOOM_WIDTH) / 2U;
+        const uint32_t y_offset = (TM4C_LCD_HEIGHT - TM4C_DOOM_HEIGHT) / 2U;
 
-        // Dva sousední pixely po otočení na jeden 32bitový zápis.
-        for (uint32_t x = 0U; x < TM4C_DOOM_WIDTH; ++x)
+        // Dva pixely na jeden 32bitový zápis; pauza omezuje podtečení LCD DMA.
+        for (uint32_t y = 0U; y < TM4C_DOOM_HEIGHT; ++y)
         {
-            const uint32_t dst_row = x * TM4C_LCD_WIDTH;
+            const uint32_t dst_row = (y + y_offset) * TM4C_LCD_WIDTH;
 
-            for (uint32_t y = TM4C_DOOM_HEIGHT; y > 0U; y -= 2U)
+            for (uint32_t x = 0U; x < TM4C_DOOM_WIDTH; x += 2U)
             {
-                const uint32_t dst_x = x_offset + (TM4C_DOOM_HEIGHT - y);
-                const uint32_t src0 = ((y - 1U) * TM4C_DOOM_WIDTH) + x;
-                const uint32_t src1 = ((y - 2U) * TM4C_DOOM_WIDTH) + x;
-                const uint32_t dst_index = dst_row + dst_x;
+                const uint32_t src_index = (y * TM4C_DOOM_WIDTH) + x;
+                const uint32_t dst_index = dst_row + x_offset + x;
 
                 dst32[dst_index >> 1] =
-                    (uint32_t)pal[src[src0]] | ((uint32_t)pal[src[src1]] << 16);
+                    (uint32_t)pal[src[src_index]] |
+                    ((uint32_t)pal[src[src_index + 1U]] << 16);
             }
 
-            // Pauza po každém výstupním řádku, aby LCD DMA stihlo číst z EPI.
             for (volatile uint32_t d = 0U; d < TM4C_LCD_COPY_PAUSE; ++d)
             {
             }

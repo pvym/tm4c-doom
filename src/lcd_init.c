@@ -272,11 +272,18 @@ void LCDIntHandler(void)
     if ((status & LCD_INT_UNDERFLOW) != 0U)
     {
         ++g_lcd_underflow_count;
-        LCDRasterEnable(LCD0_BASE);
     }
     if ((status & LCD_INT_SYNC_LOST) != 0U)
     {
         ++g_lcd_synclost_count;
+    }
+    if ((status & (LCD_INT_UNDERFLOW | LCD_INT_SYNC_LOST)) != 0U)
+    {
+        // Plný restart rastru a DMA na aktuálním front bufferu.
+        LCDRasterDisable(LCD0_BASE);
+        LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)s_front_addr,
+                                TM4C_LCD_FRAMEBUFFER_SIZE);
+        LCDRasterEnable(LCD0_BASE);
     }
     if ((status & LCD_INT_RASTER_FRAME_DONE) != 0U)
     {

@@ -115,6 +115,6 @@
 #define TM4C_SD_CS_PORT             GPIO_PORTB_BASE
 #define TM4C_SD_CS_PIN              GPIO_PIN_4
 #define TM4C_SD_INIT_HZ             400000UL
-#define TM4C_SD_TRANSFER_HZ         12000000UL
+#define TM4C_SD_TRANSFER_HZ         20000000UL
 
 #endif

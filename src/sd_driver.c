@@ -21,6 +21,7 @@
 #define SD_CMD12    12U
 #define SD_CMD16    16U
 #define SD_CMD17    17U
+#define SD_CMD18    18U
 #define SD_CMD55    55U
 #define SD_CMD58    58U
 #define SD_ACMD41   41U
@@ -118,15 +119,18 @@ static uint8_t SD_SendCommand(uint8_t command, uint32_t argument)
         }
     }
 
-    SD_Deselect();
-    SD_Select(true);
-
-    s_last_command_wait_ready_timed_out = false;
-    if (!SD_WaitReady(50000U))
+    if (command != SD_CMD12)
     {
-        s_last_command_wait_ready_timed_out = true;
         SD_Deselect();
-        return 0xFFU;
+        SD_Select(true);
+
+        s_last_command_wait_ready_timed_out = false;
+        if (!SD_WaitReady(50000U))
+        {
+            s_last_command_wait_ready_timed_out = true;
+            SD_Deselect();
+            return 0xFFU;
+        }
     }
 
     if (command == SD_CMD0)
@@ -162,6 +166,30 @@ static uint8_t SD_SendCommand(uint8_t command, uint32_t argument)
     return 0xFFU;
 }
 
+// Plní TX FIFO předem (8 položek), takže SSI běží bez mezer mezi bajty.
+static void SD_ReceiveBytes(uint8_t *buffer, uint32_t length)
+{
+    uint32_t sent = (length < 8U) ? length : 8U;
+    uint32_t received;
+
+    for (uint32_t i = 0U; i < sent; ++i)
+    {
+        MAP_SSIDataPut(TM4C_SD_SSI_BASE, 0xFFU);
+    }
+
+    for (uint32_t i = 0U; i < length; ++i)
+    {
+        MAP_SSIDataGet(TM4C_SD_SSI_BASE, &received);
+        buffer[i] = (uint8_t)received;
+
+        if (sent < length)
+        {
+            MAP_SSIDataPut(TM4C_SD_SSI_BASE, 0xFFU);
+            ++sent;
+        }
+    }
+}
+
 static bool SD_ReceiveDataBlock(uint8_t *buffer, uint32_t length)
 {
     uint8_t token;
@@ -171,10 +199,7 @@ static bool SD_ReceiveDataBlock(uint8_t *buffer, uint32_t length)
         token = SD_SPITransfer(0xFFU);
         if (token == SD_TOKEN_START_BLOCK)
         {
-            for (uint32_t j = 0; j < length; ++j)
-            {
-                buffer[j] = SD_SPITransfer(0xFFU);
-            }
+            SD_ReceiveBytes(buffer, length);
 
             SD_SPITransfer(0xFFU);
             SD_SPITransfer(0xFFU);
@@ -496,24 +521,33 @@ DRESULT disk_read(BYTE pdrv, BYTE *buff, LBA_t sector, UINT count)
         sector *= 512UL;
     }
 
-    for (UINT i = 0; i < count; ++i)
+    if (count > 1U)
     {
-        if (SD_SendCommand(SD_CMD17, (uint32_t)sector) != 0U)
+        bool ok = (SD_SendCommand(SD_CMD18, (uint32_t)sector) == 0U);
+
+        for (UINT i = 0; ok && (i < count); ++i)
         {
-            SD_Deselect();
-            return RES_ERROR;
+            ok = SD_ReceiveDataBlock(buff + (i * 512U), 512U);
         }
 
-        if (!SD_ReceiveDataBlock(buff + (i * 512U), 512U))
-        {
-            SD_Deselect();
-            return RES_ERROR;
-        }
-
+        (void)SD_SendCommand(SD_CMD12, 0U);
         SD_Deselect();
-        sector += ((s_card_type & CT_BLOCK) != 0U) ? 1UL : 512UL;
+        return ok ? RES_OK : RES_ERROR;
     }
 
+    if (SD_SendCommand(SD_CMD17, (uint32_t)sector) != 0U)
+    {
+        SD_Deselect();
+        return RES_ERROR;
+    }
+
+    if (!SD_ReceiveDataBlock(buff, 512U))
+    {
+        SD_Deselect();
+        return RES_ERROR;
+    }
+
+    SD_Deselect();
     return RES_OK;
 }
 

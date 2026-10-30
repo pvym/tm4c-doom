@@ -13,11 +13,11 @@
 /* #define TM4C_LCD_OFF_FOR_DOOM    1 */
 #define TM4C_SYSTEM_CLOCK_HZ        120000000UL
 
-#define TM4C_LCD_WIDTH              480U
-#define TM4C_LCD_HEIGHT             320U
+#define TM4C_LCD_WIDTH              320U
+#define TM4C_LCD_HEIGHT             480U
 #define TM4C_DOOM_WIDTH             320U
 #define TM4C_DOOM_HEIGHT            200U
-#define TM4C_PANEL_MADCTL           0xE8U
+#define TM4C_PANEL_MADCTL           0xA8U
 
 #define TM4C_LCD_FRAMEBUFFER_ADDR   0x60000000UL
 /* Druhý framebuffer (double buffering); musí ležet za .bss_sdram (konec ~0x6008AAC4). */

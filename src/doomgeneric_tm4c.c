@@ -87,10 +87,20 @@ void DG_DrawFrame(void)
         volatile uint32_t *dst32 = (volatile uint32_t *)dst;
         const uint16_t *pal = s_palette565;
 
-        // Dva pixely na jeden 32bitový zápis do SDRAM (poloviční počet přístupů na EPI).
-        for (uint32_t i = 0; i < (TM4C_DOOM_WIDTH * TM4C_DOOM_HEIGHT); i += 2U)
+        // Dva pixely na jeden 32bitový zápis; po každém řádku krátká pauza,
+        // aby LCD DMA stihlo číst z EPI (jinak podtéká a obraz je vidět překreslovat).
+        for (uint32_t y = 0U; y < TM4C_DOOM_HEIGHT; ++y)
         {
-            dst32[i >> 1] = (uint32_t)pal[src[i]] | ((uint32_t)pal[src[i + 1U]] << 16);
+            for (uint32_t x = 0U; x < TM4C_DOOM_WIDTH; x += 2U)
+            {
+                uint32_t i = (y * TM4C_DOOM_WIDTH) + x;
+
+                dst32[i >> 1] = (uint32_t)pal[src[i]] | ((uint32_t)pal[src[i + 1U]] << 16);
+            }
+
+            for (volatile uint32_t d = 0U; d < TM4C_LCD_COPY_PAUSE; ++d)
+            {
+            }
         }
     }
 

@@ -81,28 +81,24 @@ void DG_DrawFrame(void)
 
     UpdatePaletteCache();
 
-    /* Map a centered landscape 320x200 frame into the portrait 320x480 raster. */
+    /* Copy Doom linearly from the top-left, advancing to the next row every 320 pixels. */
     {
         volatile uint32_t *dst32 = (volatile uint32_t *)dst;
         const uint16_t *pal = s_palette565;
-        const uint32_t x_offset = (TM4C_LCD_WIDTH - TM4C_DOOM_HEIGHT) / 2U;
-        const uint32_t y_offset = (TM4C_LCD_HEIGHT - TM4C_DOOM_WIDTH) / 2U;
 
         // Dva pixely na jeden 32bitový zápis; pauza omezuje podtečení LCD DMA.
-        for (uint32_t row = 0U; row < TM4C_DOOM_WIDTH; ++row)
+        for (uint32_t y = 0U; y < TM4C_DOOM_HEIGHT; ++y)
         {
-            const uint32_t src_x = row;
-            const uint32_t dst_row = (y_offset + row) * TM4C_LCD_WIDTH;
+            const uint32_t dst_row = y * TM4C_LCD_WIDTH;
 
-            for (uint32_t column = 0U; column < TM4C_DOOM_HEIGHT; column += 2U)
+            for (uint32_t x = 0U; x < TM4C_DOOM_WIDTH; x += 2U)
             {
-                const uint32_t src_y0 = TM4C_DOOM_HEIGHT - 1U - column;
-                const uint32_t src_y1 = src_y0 - 1U;
-                const uint32_t dst_index = dst_row + x_offset + column;
+                const uint32_t src_index = (y * TM4C_DOOM_WIDTH) + x;
+                const uint32_t dst_index = dst_row + x;
 
                 dst32[dst_index >> 1] =
-                    (uint32_t)pal[src[(src_y0 * TM4C_DOOM_WIDTH) + src_x]] |
-                    ((uint32_t)pal[src[(src_y1 * TM4C_DOOM_WIDTH) + src_x]] << 16);
+                    (uint32_t)pal[src[src_index]] |
+                    ((uint32_t)pal[src[src_index + 1U]] << 16);
             }
 
             for (volatile uint32_t d = 0U; d < TM4C_LCD_COPY_PAUSE; ++d)

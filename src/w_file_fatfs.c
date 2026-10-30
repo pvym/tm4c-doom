@@ -49,9 +49,12 @@ static wad_file_t *W_FatFs_OpenFile(char *path)
         result->cache = (uint8_t *)SD_DriverWadCacheBase();
         result->cache_len = result->wad.length;
 
-        if ((f_lseek(&result->file, 0U) == FR_OK) &&
-            (f_read(&result->file, result->cache, result->cache_len, &bytes_read) == FR_OK) &&
-            (bytes_read == result->cache_len))
+        const bool already_cached = (SD_DriverWadCachedLength() == result->cache_len);
+
+        if (already_cached ||
+            ((f_lseek(&result->file, 0U) == FR_OK) &&
+             (f_read(&result->file, result->cache, result->cache_len, &bytes_read) == FR_OK) &&
+             (bytes_read == result->cache_len)))
         {
             result->wad.mapped = result->cache;
             s_cached_wad = result;

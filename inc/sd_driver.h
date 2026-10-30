@@ -39,6 +39,8 @@ sd_wad_check_result_t SD_DriverWadCheck(const char *path);
 uint8_t SD_DriverLastFatFsResult(void);
 uintptr_t SD_DriverWadCacheBase(void);
 size_t SD_DriverWadCacheSize(void);
+/* Velikost WADu již načteného do cache funkcí SD_DriverWadCheck (0 = nenačten). */
+size_t SD_DriverWadCachedLength(void);
 const char *SD_DriverDefaultWadPath(void);
 
 #endif

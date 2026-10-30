@@ -39,6 +39,7 @@ static uint8_t s_card_type;
 static bool s_bus_initialized;
 static sd_card_init_result_t s_card_init_result = SD_CARD_INIT_BUS_ERROR;
 static FRESULT s_last_fresult = FR_OK;
+static size_t s_wad_cached_length;
 static uint8_t s_cmd0_response = 0xFFU;
 static bool s_cmd0_wait_ready_timed_out;
 static bool s_last_command_wait_ready_timed_out;
@@ -689,8 +690,15 @@ sd_wad_check_result_t SD_DriverWadCheck(const char *path)
         }
     }
 
+    s_wad_cached_length = (result == SD_WAD_CHECK_OK) ? (size_t)size : 0U;
+
     (void)f_close(&file);
     return result;
+}
+
+size_t SD_DriverWadCachedLength(void)
+{
+    return s_wad_cached_length;
 }
 
 uintptr_t SD_DriverWadCacheBase(void)

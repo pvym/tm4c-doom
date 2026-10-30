@@ -235,7 +235,7 @@ static void PanelInitST7796SRGB(uint32_t system_clock_hz)
     PanelWriteData((uint8_t)g_tm4cRasterTiming.ui16HBackPorch);
 
     PanelWriteCommand(ST7796S_WRCABC);
-    PanelWriteData(0x82U);
+    PanelWriteData(0x80U);
 
     PanelWriteCommand(ST7796S_CSCON);
     PanelWriteData(0x3CU);
@@ -563,7 +563,7 @@ void InitST7796S_RGB(uint32_t ui32SysClock) {
     WriteDataSPI(((g_sPowertip480x320x60Hz.sTiming.ui16HBackPorch) & 0xFF));
 
     WriteCommandSPI(ST7796S_WRCABC);
-    WriteDataSPI(0x82);
+    WriteDataSPI(0x80);
 
     // disable commands 2
     WriteCommandSPI(ST7796S_CSCON);		// Command Set Control

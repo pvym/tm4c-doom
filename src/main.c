@@ -64,8 +64,8 @@ static void TM4C_SdramBssTest(void)
 // Zátěžové čtení SDRAM vzorem "načti ukazatel z literálu, pak hodnotu"; hodnota má být 0.
 static void TM4C_SdramReadStress(void)
 {
-    static volatile uint32_t *const probe = (volatile uint32_t *)0x1005085CUL;
-    static volatile uint32_t *const other = (volatile uint32_t *)0x1005065CUL;
+    static volatile uint32_t *const probe = (volatile uint32_t *)0x6005085CUL;
+    static volatile uint32_t *const other = (volatile uint32_t *)0x6005065CUL;
 
     for (uint32_t i = 0U; i < 2000000UL; ++i)
     {

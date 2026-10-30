@@ -68,7 +68,7 @@ void DG_DrawFrame(void)
     UpdatePaletteCache();
 
     /* Panel width == Doom width, so the Doom image is a contiguous block
-       starting at the top-left corner (framebuffer address 0x10000000). */
+       starting at the top-left corner (framebuffer address 0x60000000). */
     for (uint32_t i = 0; i < (TM4C_DOOM_WIDTH * TM4C_DOOM_HEIGHT); ++i)
     {
         dst[i] = s_palette565[src[i]];

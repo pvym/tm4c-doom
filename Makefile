@@ -20,7 +20,7 @@ DEFINES := \
     -DDOOMGENERIC_RESY=200 \
     -DTM4C_USE_FATFS \
     -DTM4C_FIXED_ZONE_HEAP \
-    -DTM4C_DOOM_ZONE_HEAP_ADDR=0x10200000UL \
+    -DTM4C_DOOM_ZONE_HEAP_ADDR=0x60200000UL \
     -DTM4C_DOOM_ZONE_HEAP_SIZE=16777216UL
 # CFLAGS := -std=c99 -Os -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
 #     -ffunction-sections -fdata-sections -fno-common -Wall -Wextra $(INCLUDES) $(DEFINES)

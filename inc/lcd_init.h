@@ -47,7 +47,7 @@ tRasterDisplayInfo;
 #define RASTER_WIDTH 320
 #define RASTER_HEIGHT 480
 
-#define LCD_FRAME_BUFFER_ADDR 0x10000000
+#define LCD_FRAME_BUFFER_ADDR 0x60000000
 
 
 // fyzicke rozmery displeje pri jeho standarni orientaci

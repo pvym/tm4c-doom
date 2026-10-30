@@ -532,7 +532,7 @@ void InitSDRAM(void) {
 	// a size of 256MB.  Although our SDRAM is only 64MB, there is no 64MB
 	// aperture option so we pick the next larger size.
 	//
-	EPIAddressMapSet(EPI0_BASE, EPI_ADDR_CODE_SIZE_256MB | EPI_ADDR_CODE_BASE_1);
+	EPIAddressMapSet(EPI0_BASE, EPI_ADDR_RAM_SIZE_256MB | EPI_ADDR_RAM_BASE_6);
 
 	//
 	// Wait for the SDRAM wake-up to complete by polling the SDRAM

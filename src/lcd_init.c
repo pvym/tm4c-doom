@@ -215,7 +215,7 @@ static void PanelInitST7796SRGB(uint32_t system_clock_hz)
 
     PanelWriteCommand(ST7796S_IDMOFF);
     PanelWriteCommand(ST7796S_MADCTL);
-    PanelWriteData(0x08U);
+    PanelWriteData(TM4C_PANEL_MADCTL);
     PanelWriteCommand(ST7796S_COLMOD);
     PanelWriteData(0x55U);
     PanelWriteCommand(ST7796S_DIC);
@@ -527,7 +527,7 @@ void InitST7796S_RGB(uint32_t ui32SysClock) {
 
 
     WriteCommandSPI(ST7796S_MADCTL);	// Memory Data Access Control
-    WriteDataSPI(0x08);					// 0x48 MV   - m.j. i RGB/BGR data order
+    WriteDataSPI(TM4C_PANEL_MADCTL);
 
     WriteCommandSPI(ST7796S_COLMOD);
     WriteDataSPI(0x55);

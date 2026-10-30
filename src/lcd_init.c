@@ -266,7 +266,7 @@ void LCDIntHandler(void)
     {
         --s_settle_frames;
     }
-    else if (((status & LCD_INT_RASTER_FRAME_DONE) != 0U) && (s_pending_addr != 0U))
+    else if (((status & LCD_INT_EOF0) != 0U) && (s_pending_addr != 0U))
     {
         LCDRasterFrameBufferSet(LCD0_BASE, 0U, (void *)s_pending_addr,
                                 TM4C_LCD_FRAMEBUFFER_SIZE);

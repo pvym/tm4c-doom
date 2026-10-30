@@ -83,9 +83,15 @@ void DG_DrawFrame(void)
 
     /* Panel width == Doom width, so the Doom image is a contiguous block
        starting at the top-left corner (framebuffer address 0x60000000). */
-    for (uint32_t i = 0; i < (TM4C_DOOM_WIDTH * TM4C_DOOM_HEIGHT); ++i)
     {
-        dst[i] = s_palette565[src[i]];
+        volatile uint32_t *dst32 = (volatile uint32_t *)dst;
+        const uint16_t *pal = s_palette565;
+
+        // Dva pixely na jeden 32bitový zápis do SDRAM (poloviční počet přístupů na EPI).
+        for (uint32_t i = 0; i < (TM4C_DOOM_WIDTH * TM4C_DOOM_HEIGHT); i += 2U)
+        {
+            dst32[i >> 1] = (uint32_t)pal[src[i]] | ((uint32_t)pal[src[i + 1U]] << 16);
+        }
     }
 
     LCD_SwapBuffers();

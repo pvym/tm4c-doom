@@ -167,7 +167,8 @@ void controlboard_init(void) {
     InitSDRAM();
     // 	TestSDRAM();
 
-    // LCD i panel se inicializují jednou v LCD_Init() (TM4C_LCD_ControllerInit).
+    InitLCDModule(g_ui32SysClock);
+    InitST7796S_RGB(g_ui32SysClock);
     InitGraphics();
 
 

@@ -382,8 +382,8 @@ void __attribute__((weak)) TM4C_LCD_ControllerInit(void)
                TM4C_SYSTEM_CLOCK_HZ);
     LCDRasterTimingSet(LCD0_BASE, &g_tm4cRasterTiming);
     LCDDMAConfigSet(LCD0_BASE,
-                    LCD_DMA_BURST_16 |
-                    LCD_DMA_FIFORDY_256_WORDS |
+                    LCD_DMA_BURST_4 |
+                    LCD_DMA_FIFORDY_64_WORDS |
                     LCD_DMA_BYTE_ORDER_0123);
     LCDRasterFrameBufferSet(LCD0_BASE,
                             0U,

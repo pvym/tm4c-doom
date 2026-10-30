@@ -73,7 +73,8 @@ void DG_Init(void)
             for (uint32_t x = 0U; x < TM4C_LCD_HEIGHT; ++x)
             {
                 fb[y * TM4C_LCD_HEIGHT + x] =
-                    (((x & 15U) == 0U) || ((y & 15U) == 0U)) ? 0xFFFFU : 0U;
+                    (((x & 15U) == 0U) || ((y & 15U) == 0U) ||
+                     (x == (TM4C_LCD_HEIGHT - 1U)) || (y == (TM4C_LCD_WIDTH - 1U))) ? 0xFFFFU : 0U;
             }
         }
     }

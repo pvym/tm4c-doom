@@ -102,31 +102,36 @@ void DG_DrawFrame(void)
 
     UpdatePaletteCache();
 
-    /* Center Doom's 320x200 frame in the 480x320 landscape display. */
+    /*
+     * Panel je (MADCTL bez MV) nativně 320x480 na výšku. Doom 320x200 se otočí
+     * o 90 stupňů a vycentruje: Doom x -> řádek rastru, Doom y -> sloupec rastru
+     * (sestupně). Rastr je TM4C_LCD_WIDTH (320) px široký.
+     */
     {
         volatile uint32_t *dst32 = (volatile uint32_t *)dst;
         const uint16_t *pal = s_palette565;
-        const uint32_t dst_stride = TM4C_LCD_HEIGHT;
-        const uint32_t x_offset = (TM4C_LCD_HEIGHT - TM4C_DOOM_WIDTH) / 2U;
-        const uint32_t y_offset = (TM4C_LCD_WIDTH - TM4C_DOOM_HEIGHT) / 2U;
+        const uint32_t row_offset = (TM4C_LCD_HEIGHT - TM4C_DOOM_WIDTH) / 2U;
+        const uint32_t col_last = ((TM4C_LCD_WIDTH + TM4C_DOOM_HEIGHT) / 2U) - 1U;
 
-        // Dva pixely na jeden 32bitový zápis; pauza omezuje podtečení LCD DMA.
-        for (uint32_t y = 0U; y < TM4C_DOOM_HEIGHT; ++y)
+        // Dva sousední pixely (y, y+1) na jeden 32bitový zápis.
+        for (uint32_t x = 0U; x < TM4C_DOOM_WIDTH; ++x)
         {
-            const uint32_t dst_row = (y + y_offset) * dst_stride + x_offset;
+            const uint32_t row_base = (x + row_offset) * TM4C_LCD_WIDTH;
 
-            for (uint32_t x = 0U; x < TM4C_DOOM_WIDTH; x += 2U)
+            for (uint32_t y = 0U; y < TM4C_DOOM_HEIGHT; y += 2U)
             {
-                const uint32_t src_index = (y * TM4C_DOOM_WIDTH) + x;
-                const uint32_t dst_index = dst_row + x;
+                const uint32_t dst_index = row_base + (col_last - 1U - y);
 
                 dst32[dst_index >> 1] =
-                    (uint32_t)pal[src[src_index]] |
-                    ((uint32_t)pal[src[src_index + 1U]] << 16);
+                    (uint32_t)pal[src[((y + 1U) * TM4C_DOOM_WIDTH) + x]] |
+                    ((uint32_t)pal[src[(y * TM4C_DOOM_WIDTH) + x]] << 16);
             }
 
-            for (volatile uint32_t d = 0U; d < TM4C_LCD_COPY_PAUSE; ++d)
+            if ((x & 1U) != 0U)
             {
+                for (volatile uint32_t d = 0U; d < TM4C_LCD_COPY_PAUSE; ++d)
+                {
+                }
             }
         }
     }

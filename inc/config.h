@@ -17,7 +17,7 @@
 #define TM4C_LCD_HEIGHT             320U
 #define TM4C_DOOM_WIDTH             320U
 #define TM4C_DOOM_HEIGHT            200U
-#define TM4C_PANEL_MADCTL           0x28U
+#define TM4C_PANEL_MADCTL           0xE8U
 
 #define TM4C_LCD_FRAMEBUFFER_ADDR   0x60000000UL
 /* Druhý framebuffer (double buffering); musí ležet za .bss_sdram (konec ~0x6008AAC4). */

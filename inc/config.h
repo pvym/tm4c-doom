@@ -17,7 +17,7 @@
 #define TM4C_LCD_HEIGHT             480U
 #define TM4C_DOOM_WIDTH             320U
 #define TM4C_DOOM_HEIGHT            200U
-#define TM4C_PANEL_MADCTL           0x68U
+#define TM4C_PANEL_MADCTL           0x08U
 /* Dočasně: testovací mřížka místo Dooma (ladění diagonálního artefaktu). */
 // #define TM4C_LCD_TEST_PATTERN
 

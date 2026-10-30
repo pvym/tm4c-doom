@@ -31,12 +31,12 @@
                                      RASTER_TIMING_ACTIVE_LOW_HSYNC | \
                                      RASTER_TIMING_ACTIVE_LOW_VSYNC | \
                                      RASTER_TIMING_ACTIVE_HIGH_OE)
-#define TM4C_LCD_H_FRONT_PORCH      38U
-#define TM4C_LCD_H_BACK_PORCH       24U
-#define TM4C_LCD_H_PULSE_WIDTH      18U
-#define TM4C_LCD_V_FRONT_PORCH      8U
-#define TM4C_LCD_V_BACK_PORCH       6U
-#define TM4C_LCD_V_PULSE_WIDTH      6U
+#define TM4C_LCD_H_FRONT_PORCH      10U
+#define TM4C_LCD_H_BACK_PORCH       3U
+#define TM4C_LCD_H_PULSE_WIDTH      3U
+#define TM4C_LCD_V_FRONT_PORCH      3U
+#define TM4C_LCD_V_BACK_PORCH       3U
+#define TM4C_LCD_V_PULSE_WIDTH      3U
 #define TM4C_LCD_AC_BIAS            0U
 
 #define TM4C_PANEL_SPI_PERIPH       SYSCTL_PERIPH_SSI0

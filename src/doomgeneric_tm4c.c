@@ -61,27 +61,6 @@ void DG_Init(void)
             back[i] = 0U;
         }
     }
-#ifdef TM4C_LCD_TEST_PATTERN
-    /* Mřížka 1 px čar po 16 px v landscape rastru 480x320 (stride 480). */
-    for (uint32_t b = 0U; b < 2U; ++b)
-    {
-        volatile uint16_t *fb = (volatile uint16_t *)(uintptr_t)
-            (b == 0U ? TM4C_LCD_FRAMEBUFFER_ADDR : TM4C_LCD_FRAMEBUFFER2_ADDR);
-
-        for (uint32_t y = 0U; y < TM4C_LCD_WIDTH; ++y)
-        {
-            for (uint32_t x = 0U; x < TM4C_LCD_HEIGHT; ++x)
-            {
-                fb[y * TM4C_LCD_HEIGHT + x] =
-                    (((x & 15U) == 0U) || ((y & 15U) == 0U) ||
-                     (x == (TM4C_LCD_HEIGHT - 1U)) || (y == (TM4C_LCD_WIDTH - 1U))) ? 0xFFFFU : 0U;
-            }
-        }
-    }
-    for (;;)
-    {
-    }
-#endif
     s_ticks_ms = 0U;
     SysTickPeriodSet(s_system_clock_hz / 1000U);
     SysTickIntEnable();

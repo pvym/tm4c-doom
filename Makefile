@@ -63,6 +63,8 @@ PLATFORM_SRCS := \
     src/doomgeneric_tm4c.c \
     src/gpio_input.c \
     src/lcd_init.c \
+    src/loading_screen.c \
+    src/loading_screen_data.c \
     src/sd_driver.c \
     src/sdram.c \
     src/syscalls.c \

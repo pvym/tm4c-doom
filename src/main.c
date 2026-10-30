@@ -6,6 +6,7 @@
 #include "doomgeneric.h"
 #include "gpio_input.h"
 #include "lcd_init.h"
+#include "loading_screen.h"
 #include "sdram.h"
 #include "sd_driver.h"
 
@@ -207,15 +208,14 @@ int main(void)
     TM4C_ZeroExternalBss();
 
     LCD_Init();
+    LoadingScreen_Show();
     // GPIO_InputInit();  // tlačítka dočasně vypnutá (ladění NMI)
 
-    LCD_Clear(0x001FU);
     if (!SD_DriverBusInit())
     {
         TM4C_StopWithDiagnostic(0xF800U);
     }
 
-    LCD_Clear(0xFFE0U);
     switch (SD_DriverCardInit())
     {
         case SD_CARD_INIT_OK:
@@ -247,13 +247,11 @@ int main(void)
             break;
     }
 
-    LCD_Clear(0x07FFU);
     if (!SD_DriverMount())
     {
         TM4C_StopWithDiagnostic(0xFFFFU);
     }
 
-    LCD_Clear(0x7BEFU);
     {
         sd_wad_check_result_t wad_result = SD_DriverWadCheck(TM4C_WAD_PATH);
 
@@ -264,7 +262,6 @@ int main(void)
     }
 
 
-    LCD_Clear(0x07E0U);
     doomgeneric_Create(6, doom_argv);
 
     while (1)

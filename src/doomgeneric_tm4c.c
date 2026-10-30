@@ -52,15 +52,6 @@ void SysTick_Handler(void)
 
 void DG_Init(void)
 {
-    LCD_Clear(0U);
-    {
-        volatile uint16_t *back = LCD_GetBackBuffer();
-
-        for (uint32_t i = 0; i < (TM4C_LCD_WIDTH * TM4C_LCD_HEIGHT); ++i)
-        {
-            back[i] = 0U;
-        }
-    }
     s_ticks_ms = 0U;
     SysTickPeriodSet(s_system_clock_hz / 1000U);
     SysTickIntEnable();

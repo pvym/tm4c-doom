@@ -248,6 +248,9 @@ static void PanelInitST7796SRGB(uint32_t system_clock_hz)
     PanelBacklightSet(true);
 }
 
+volatile uint32_t g_lcd_underflow_count;
+volatile uint32_t g_lcd_synclost_count;
+volatile uint32_t g_lcd_frame_count;
 static volatile uintptr_t s_front_addr = TM4C_LCD_FRAMEBUFFER_ADDR;
 static volatile uintptr_t s_pending_addr = 0U;
 
@@ -266,9 +269,19 @@ void LCDIntHandler(void)
         s_pending_addr = 0U;
     }
 
+    // Podtečení řeší hardware (LCD_MODE_AUTO_UFLOW_RESTART); ruční reset rastru
+    // by způsobil blikání, proto jen počítáme.
     if ((status & LCD_INT_UNDERFLOW) != 0U)
     {
-        LCDRasterEnable(LCD0_BASE);
+        ++g_lcd_underflow_count;
+    }
+    if ((status & LCD_INT_SYNC_LOST) != 0U)
+    {
+        ++g_lcd_synclost_count;
+    }
+    if ((status & LCD_INT_RASTER_FRAME_DONE) != 0U)
+    {
+        ++g_lcd_frame_count;
     }
 }
 

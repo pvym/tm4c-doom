@@ -639,10 +639,7 @@ void InitLCDModule(uint32_t ui32SysClkHz) {
 
     LCDRasterTimingSet(LCD0_BASE, &(g_psDisplayMode->sTiming));
 
-    //
-    // Configure DMA-related parameters.
-    //
-    LCDDMAConfigSet(LCD0_BASE, LCD_DMA_BURST_16 | LCD_DMA_FIFORDY_64_WORDS | LCD_DMA_BYTE_ORDER_0123);
+    // DMA se nastavuje v TM4C_LCD_ControllerInit().
 
     //
     // If the chosen display has an initialization function, call it now.

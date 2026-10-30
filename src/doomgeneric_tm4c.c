@@ -81,15 +81,16 @@ void DG_DrawFrame(void)
 
     UpdatePaletteCache();
 
-    /* Copy Doom linearly from the top-left, advancing to the next row every 320 pixels. */
+    /* Leave the remaining 160 landscape pixels between 320-pixel Doom rows. */
     {
         volatile uint32_t *dst32 = (volatile uint32_t *)dst;
         const uint16_t *pal = s_palette565;
+        const uint32_t dst_stride = TM4C_LCD_WIDTH + 160U;
 
         // Dva pixely na jeden 32bitový zápis; pauza omezuje podtečení LCD DMA.
         for (uint32_t y = 0U; y < TM4C_DOOM_HEIGHT; ++y)
         {
-            const uint32_t dst_row = y * TM4C_LCD_WIDTH;
+            const uint32_t dst_row = y * dst_stride;
 
             for (uint32_t x = 0U; x < TM4C_DOOM_WIDTH; x += 2U)
             {

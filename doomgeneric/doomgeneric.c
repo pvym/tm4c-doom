@@ -18,7 +18,9 @@ void doomgeneric_Create(int argc, char **argv)
 
 	M_FindResponseFile();
 
+#ifndef TM4C_USE_FATFS
 	DG_ScreenBuffer = malloc(DOOMGENERIC_RESX * DOOMGENERIC_RESY * sizeof(*DG_ScreenBuffer));
+#endif
 
 	DG_Init();
 

@@ -314,7 +314,12 @@ void I_InitGraphics (void)
 
 
     /* Allocate screen to draw to */
+#ifdef TM4C_USE_FATFS
+	// Vykreslovací buffer v rychlé SRAM (zone heap je v pomalé SDRAM).
+	I_VideoBuffer = (byte*)malloc (SCREENWIDTH * SCREENHEIGHT);
+#else
 	I_VideoBuffer = (byte*)Z_Malloc (SCREENWIDTH * SCREENHEIGHT, PU_STATIC, NULL);  // For DOOM to draw on
+#endif
 
 	screenvisible = true;
 
@@ -347,6 +352,11 @@ void I_UpdateNoBlit (void)
 
 void I_FinishUpdate (void)
 {
+#ifdef TM4C_USE_FATFS
+    // DG_DrawFrame čte přímo I_VideoBuffer, kopie do DG_ScreenBuffer se šetří.
+    DG_DrawFrame();
+    return;
+#else
     int y;
     int x_offset, y_offset, x_offset_end;
     unsigned char *line_in, *line_out;
@@ -394,6 +404,7 @@ void I_FinishUpdate (void)
     }
 
 	DG_DrawFrame();
+#endif
 }
 
 //

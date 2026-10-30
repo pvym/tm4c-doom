@@ -33,7 +33,7 @@ DEFINES := \
 #     $(INCLUDES) $(DEFINES)
 # DEBUG
 
-CFLAGS := -O0 -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
+CFLAGS := -O2 -g3 -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
     -ffunction-sections -fdata-sections -fno-common -Wall -Wextra \
     -specs=nano.specs \
     $(INCLUDES) $(DEFINES)

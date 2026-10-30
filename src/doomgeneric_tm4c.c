@@ -76,7 +76,8 @@ static uint32_t s_fps_last_frames;
 void DG_DrawFrame(void)
 {
     volatile uint16_t *dst = LCD_GetBackBuffer();
-    const uint8_t *src = (const uint8_t *)DG_ScreenBuffer;
+    extern byte *I_VideoBuffer;
+    const uint8_t *src = (const uint8_t *)I_VideoBuffer;
 
     UpdatePaletteCache();
 

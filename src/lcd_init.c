@@ -269,11 +269,10 @@ void LCDIntHandler(void)
         s_pending_addr = 0U;
     }
 
-    // Podtečení řeší hardware (LCD_MODE_AUTO_UFLOW_RESTART); ruční reset rastru
-    // by způsobil blikání, proto jen počítáme.
     if ((status & LCD_INT_UNDERFLOW) != 0U)
     {
         ++g_lcd_underflow_count;
+        LCDRasterEnable(LCD0_BASE);
     }
     if ((status & LCD_INT_SYNC_LOST) != 0U)
     {
